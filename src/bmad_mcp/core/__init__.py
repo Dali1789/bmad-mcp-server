@@ -8,6 +8,10 @@ from .global_registry import GlobalRegistry
 from .task_tracker import BMadTaskTracker, BMadTask
 from .todowrite_bridge import TodoWriteBridge
 from .notion_sync import NotionTaskSync
+from .console_formatter import BMadConsoleFormatter
+from .time_monitor import BMadTimeMonitor
+from .simulator import BMadWorkDaySimulator
+from .realtime_updater import BMadRealtimeUpdater
 
 __all__ = [
     'BMadLoader',
@@ -16,5 +20,9 @@ __all__ = [
     'BMadTaskTracker',
     'BMadTask',
     'TodoWriteBridge',
-    'NotionTaskSync'
+    'NotionTaskSync',
+    'BMadConsoleFormatter',
+    'BMadTimeMonitor',
+    'BMadWorkDaySimulator',
+    'BMadRealtimeUpdater'
 ]

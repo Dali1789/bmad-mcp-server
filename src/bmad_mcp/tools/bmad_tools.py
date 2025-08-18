@@ -9,7 +9,11 @@ from typing import List, Dict, Any, Optional
 from mcp.types import TextContent
 
 from ..agents import AgentManager
-from ..core import BMadLoader, ProjectDetector, BMadTaskTracker, TodoWriteBridge, NotionTaskSync
+from ..core import (
+    BMadLoader, ProjectDetector, BMadTaskTracker, TodoWriteBridge, 
+    NotionTaskSync, BMadConsoleFormatter, BMadTimeMonitor, 
+    BMadWorkDaySimulator, BMadRealtimeUpdater
+)
 from ..routing import OpenRouterClient
 
 
@@ -34,6 +38,12 @@ class BMadTools:
         self.task_tracker = BMadTaskTracker(global_registry)
         self.todowrite_bridge = TodoWriteBridge(self.task_tracker)
         self.notion_sync = NotionTaskSync(self.task_tracker)
+        
+        # Initialize enhanced features
+        self.console_formatter = BMadConsoleFormatter(self.task_tracker)
+        self.time_monitor = BMadTimeMonitor(self.task_tracker, self.console_formatter)
+        self.simulator = BMadWorkDaySimulator(self.task_tracker, self.console_formatter, self.time_monitor)
+        self.realtime_updater = BMadRealtimeUpdater(self.task_tracker, self.console_formatter)
     
     async def activate_agent(self, agent: str) -> List[TextContent]:
         """Activate a BMAD agent"""
@@ -460,5 +470,114 @@ Use `bmad_stop_task_monitoring` to disable.
         self.task_tracker.stop_monitoring()
         
         result = "⏹️ **Task Monitoring Stopped**"
+        
+        return [TextContent(type="text", text=result)]
+    
+    # Enhanced Features from Local System
+    async def get_project_status(self) -> List[TextContent]:
+        """Get comprehensive project status overview"""
+        project_status = self.task_tracker.get_project_status()
+        formatted_status = self.console_formatter.format_project_status(project_status["project_id"])
+        
+        return [TextContent(type="text", text=formatted_status)]
+    
+    async def start_realtime_mode(self) -> List[TextContent]:
+        """Start real-time task monitoring with live updates"""
+        result = self.realtime_updater.start_realtime_updates()
+        return [TextContent(type="text", text=result)]
+    
+    async def stop_realtime_mode(self) -> List[TextContent]:
+        """Stop real-time monitoring"""
+        result = self.realtime_updater.stop_realtime_updates()
+        return [TextContent(type="text", text=result)]
+    
+    async def start_work_session(self, task_id: str) -> List[TextContent]:
+        """Start tracking a work session for a task"""
+        result = self.realtime_updater.start_work_session(task_id)
+        return [TextContent(type="text", text=result)]
+    
+    async def end_work_session(self, task_id: str, hours_worked: Optional[float] = None) -> List[TextContent]:
+        """End work session and log hours"""
+        result = self.realtime_updater.end_work_session(task_id, hours_worked)
+        return [TextContent(type="text", text=result)]
+    
+    async def get_active_sessions(self) -> List[TextContent]:
+        """Get information about active work sessions"""
+        result = self.realtime_updater.get_active_sessions()
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_work_day(self, speed_factor: float = 1.0) -> List[TextContent]:
+        """Simulate a complete work day with realistic progression"""
+        result = await self.simulator.simulate_work_day(speed_factor)
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_task_progression(self, task_id: str, target_hours: float) -> List[TextContent]:
+        """Simulate realistic task progression"""
+        result = await self.simulator.simulate_task_progression(task_id, target_hours)
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_reminder_cycle(self) -> List[TextContent]:
+        """Simulate daily reminder cycle"""
+        result = await self.simulator.simulate_reminder_cycle()
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_agent_workday(self, agent: str, hours: float = 8.0) -> List[TextContent]:
+        """Simulate a full workday for specific agent"""
+        result = await self.simulator.simulate_agent_workday(agent, hours)
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_crisis_scenario(self, crisis_type: str = "blocked_task") -> List[TextContent]:
+        """Simulate crisis scenarios and recovery"""
+        result = await self.simulator.simulate_crisis_scenario(crisis_type)
+        return [TextContent(type="text", text=result)]
+    
+    async def get_simulation_options(self) -> List[TextContent]:
+        """Get list of available simulation options"""
+        result = self.simulator.get_simulation_options()
+        return [TextContent(type="text", text=result)]
+    
+    async def manual_reminder_check(self) -> List[TextContent]:
+        """Manually trigger reminder check"""
+        result = self.time_monitor.manual_reminder_check()
+        return [TextContent(type="text", text=result)]
+    
+    async def manual_progress_check(self) -> List[TextContent]:
+        """Manually trigger progress check"""
+        result = self.time_monitor.manual_progress_check()
+        return [TextContent(type="text", text=result)]
+    
+    async def manual_daily_report(self) -> List[TextContent]:
+        """Manually generate daily report"""
+        result = self.time_monitor.manual_daily_report()
+        return [TextContent(type="text", text=result)]
+    
+    async def simulate_time_advance(self, target_time: str) -> List[TextContent]:
+        """Simulate advancing time to trigger reminders"""
+        result = self.time_monitor.simulate_time_advance(target_time)
+        return [TextContent(type="text", text=result)]
+    
+    async def get_todays_schedule(self) -> List[TextContent]:
+        """Get today's complete reminder schedule"""
+        result = self.time_monitor.get_todays_schedule()
+        return [TextContent(type="text", text=result)]
+    
+    async def get_realtime_status(self) -> List[TextContent]:
+        """Get real-time monitoring status"""
+        status = self.realtime_updater.get_realtime_status()
+        
+        result = f"""🔴 **Real-time Status**:
+        
+**Active**: {status['realtime_active']}
+**Session Duration**: {status['session_duration']:.1f}h
+**Active Work Sessions**: {status['active_sessions']}
+**Work Hours**: {status['work_hours_active']}
+**Last Auto Progress**: {status['last_auto_progress']}
+
+**Daily Metrics**:
+• Tasks Started: {status['daily_metrics']['tasks_started']}
+• Tasks Completed: {status['daily_metrics']['tasks_completed']}
+• Progress Updates: {status['daily_metrics']['progress_updates']}
+• Total Work Time: {status['daily_metrics']['total_work_time']:.1f}h
+"""
         
         return [TextContent(type="text", text=result)]

@@ -76,6 +76,15 @@ class BMadTaskTracker:
         self.monitoring_active = False
         self.monitoring_thread = None
         
+        # Project integration
+        self.current_project_id = "24d5e4b8-4c44-811b-a198-eb8d7b3a527b"  # Default BMAD project
+        self.project_context: Dict[str, Any] = {
+            "name": "BMAD System Integration",
+            "created": "2025-08-12",
+            "type": "development",
+            "priority": "high"
+        }
+        
         # Phase definitions
         self.phases = {
             "BMAD Integration": ["bmad-pm", "central-hub", "mcp-integration", "pipeline"],
@@ -140,37 +149,97 @@ class BMadTaskTracker:
             logger.error(f"Error saving tasks: {e}")
     
     def _initialize_default_tasks(self):
-        """Initialize with default BMAD tasks"""
+        """Initialize with current BMAD project tasks (migrated from local system)"""
         today = datetime.now().strftime("%Y-%m-%d")
         tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         
+        # Current active BMAD project tasks (August 2025)
         default_tasks = [
             BMadTask(
-                id="mcp-task-management",
-                name="MCP Task Management Integration",
-                start_date=today,
-                allocated_hours=8.0,
+                id="bmad-pm",
+                name="BMAD Project Manager",
+                start_date="2025-08-12",
+                allocated_hours=16.0,
+                completed_hours=4.0,
                 status="in_progress",
-                agent="dev",
-                daily_allocation={today: 4.0, tomorrow: 4.0}
+                agent="pm",
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={"2025-08-12": 4.0, "2025-08-14": 6.0, "2025-08-16": 6.0},
+                follow_ups=[
+                    {"name": "BMAD Command Tests", "hours": 4.0},
+                    {"name": "Integration Validation", "hours": 3.0}
+                ]
             ),
             BMadTask(
-                id="bmad-agents-completion",
-                name="Complete All BMAD Agents",
-                start_date=today,
-                allocated_hours=6.0,
+                id="central-hub",
+                name="Central Hub Setup",
+                start_date="2025-08-12",
+                allocated_hours=8.0,
+                completed_hours=6.0,
+                status="in_progress",
+                agent="architect",
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={"2025-08-12": 4.0, "2025-08-14": 2.0, "2025-08-15": 2.0},
+                follow_ups=[
+                    {"name": "Hub Monitoring Tests", "hours": 3.0},
+                    {"name": "Cross-System Sync Check", "hours": 2.0}
+                ]
+            ),
+            BMadTask(
+                id="mcp-integration",
+                name="MCP Integration",
+                start_date="2025-08-13",
+                allocated_hours=10.0,
+                completed_hours=8.0,
                 status="completed",
                 agent="dev",
-                daily_allocation={today: 6.0}
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={"2025-08-13": 6.0, "2025-08-15": 4.0},
+                follow_ups=[
+                    {"name": "MCP Connection Tests", "hours": 2.0},
+                    {"name": "API Response Validation", "hours": 2.0}
+                ]
             ),
             BMadTask(
-                id="notion-integration",
-                name="Notion Database Integration",
-                start_date=tomorrow,
+                id="pipeline",
+                name="Pipeline Management",
+                start_date="2025-08-13",
                 allocated_hours=8.0,
-                status="pending",
+                completed_hours=2.0,
+                status="in_progress",
                 agent="dev",
-                daily_allocation={tomorrow: 4.0}
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={"2025-08-13": 4.0, "2025-08-15": 4.0},
+                follow_ups=[
+                    {"name": "Pipeline Flow Tests", "hours": 2.0},
+                    {"name": "Status Transition Checks", "hours": 2.0}
+                ]
+            ),
+            # Additional tasks for current development
+            BMadTask(
+                id="task-management-system",
+                name="Complete Task Management System",
+                start_date=today,
+                allocated_hours=12.0,
+                completed_hours=10.0,
+                status="completed",
+                agent="dev",
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={today: 8.0, tomorrow: 4.0}
+            ),
+            BMadTask(
+                id="system-testing",
+                name="System Integration Testing",
+                start_date=tomorrow,
+                allocated_hours=6.0,
+                status="pending",
+                agent="qa",
+                project="24d5e4b8-4c44-811b-a198-eb8d7b3a527b",
+                daily_allocation={tomorrow: 3.0},
+                follow_ups=[
+                    {"name": "User Acceptance Testing", "hours": 4.0},
+                    {"name": "Performance Testing", "hours": 3.0}
+                ]
             )
         ]
         
@@ -525,3 +594,106 @@ class BMadTaskTracker:
     def list_all_tasks(self) -> List[BMadTask]:
         """Get all tasks"""
         return list(self.tasks.values())
+    
+    def set_project_context(self, project_id: str, project_info: Dict[str, Any]):
+        """Set current project context"""
+        self.current_project_id = project_id
+        self.project_context = project_info
+        logger.info(f"Project context set: {project_info.get('name', project_id)}")
+    
+    def get_project_status(self) -> Dict[str, Any]:
+        """Get current project status and statistics"""
+        project_tasks = [t for t in self.tasks.values() if t.project == self.current_project_id]
+        
+        if not project_tasks:
+            return {
+                "project_id": self.current_project_id,
+                "project_context": self.project_context,
+                "total_tasks": 0,
+                "message": "No tasks found for current project"
+            }
+        
+        total_hours = sum(t.allocated_hours for t in project_tasks)
+        completed_hours = sum(t.completed_hours for t in project_tasks)
+        completed_tasks = len([t for t in project_tasks if t.status == "completed"])
+        in_progress_tasks = len([t for t in project_tasks if t.status == "in_progress"])
+        pending_tasks = len([t for t in project_tasks if t.status == "pending"])
+        
+        # Agent workload breakdown
+        agent_workload = {}
+        for task in project_tasks:
+            if task.agent:
+                if task.agent not in agent_workload:
+                    agent_workload[task.agent] = {
+                        "total_tasks": 0,
+                        "total_hours": 0.0,
+                        "completed_hours": 0.0,
+                        "active_tasks": 0
+                    }
+                
+                agent_workload[task.agent]["total_tasks"] += 1
+                agent_workload[task.agent]["total_hours"] += task.allocated_hours
+                agent_workload[task.agent]["completed_hours"] += task.completed_hours
+                
+                if task.status in ["pending", "in_progress"]:
+                    agent_workload[task.agent]["active_tasks"] += 1
+        
+        # Phase progress
+        phase_progress = {}
+        for phase_name, task_ids in self.phases.items():
+            phase_tasks = [self.tasks.get(tid) for tid in task_ids if tid in self.tasks]
+            if phase_tasks:
+                completed_in_phase = len([t for t in phase_tasks if t and t.status == "completed"])
+                phase_progress[phase_name] = {
+                    "total_tasks": len(phase_tasks),
+                    "completed_tasks": completed_in_phase,
+                    "completion_percentage": int((completed_in_phase / len(phase_tasks)) * 100) if phase_tasks else 0
+                }
+        
+        return {
+            "project_id": self.current_project_id,
+            "project_context": self.project_context,
+            "total_tasks": len(project_tasks),
+            "completed_tasks": completed_tasks,
+            "in_progress_tasks": in_progress_tasks,
+            "pending_tasks": pending_tasks,
+            "completion_percentage": int((completed_tasks / len(project_tasks)) * 100) if project_tasks else 0,
+            "total_hours": total_hours,
+            "completed_hours": completed_hours,
+            "progress_percentage": int((completed_hours / total_hours) * 100) if total_hours > 0 else 0,
+            "agent_workload": agent_workload,
+            "phase_progress": phase_progress,
+            "last_updated": datetime.now().isoformat()
+        }
+    
+    def get_project_tasks(self, project_id: Optional[str] = None) -> List[BMadTask]:
+        """Get all tasks for a specific project"""
+        target_project = project_id or self.current_project_id
+        return [t for t in self.tasks.values() if t.project == target_project]
+    
+    def create_project_task(
+        self,
+        task_id: str,
+        name: str,
+        allocated_hours: float,
+        agent: Optional[str] = None,
+        start_date: Optional[str] = None,
+        project_id: Optional[str] = None
+    ) -> BMadTask:
+        """Create a task and automatically assign it to current project"""
+        target_project = project_id or self.current_project_id
+        
+        task = self.create_task(
+            task_id=task_id,
+            name=name,
+            allocated_hours=allocated_hours,
+            agent=agent,
+            start_date=start_date
+        )
+        
+        # Set project assignment
+        task.project = target_project
+        self._save_tasks()
+        
+        logger.info(f"Created project task: {name} for project {target_project}")
+        return task
