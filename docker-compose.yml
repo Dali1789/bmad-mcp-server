@@ -1,44 +1,134 @@
 version: '3.8'
 
 services:
+  # BMAD MCP Server - Main application
   bmad-mcp-server:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: bmad-mcp-server
+    ports:
+      - "8080:8080"  # Web interface (optional)
+      - "3456:3456"  # MCP stdio bridge (optional)
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - BMAD_LOG_LEVEL=INFO
+      - NOTION_TOKEN=${NOTION_TOKEN}
+      - BMAD_MAX_DAILY_HOURS=${BMAD_MAX_DAILY_HOURS:-10}
+      - BMAD_DEFAULT_AGENT=${BMAD_DEFAULT_AGENT:-dev}
+      - BMAD_LOG_LEVEL=${BMAD_LOG_LEVEL:-INFO}
+      - PYTHONPATH=/app
     volumes:
-      # Mount local .bmad-core if available
-      - ./.bmad-core:/app/.bmad-core:ro
-      # Mount host project directory (optional)
-      - ${PWD}:/workspace:ro
-    ports:
-      # Expose port for HTTP mode (if implemented)
-      - "3000:3000"
+      - .:/app
+      - bmad_data:/app/data
+      - bmad_tasks:/app/.bmad-global
+    working_dir: /app
+    command: python -m src.bmad_mcp.server
     restart: unless-stopped
-    
-    # For stdio mode, you might want to run interactively
-    stdin_open: true
-    tty: true
-    
-    # Override command for different modes
-    # command: ["python", "-m", "bmad_mcp.server", "--http", "--port", "3000"]
-    
-  # Optional: Development environment with hot reload
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bmad-network
+      
+  # Development environment with hot reload
   bmad-mcp-dev:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: development
     container_name: bmad-mcp-dev
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - NOTION_TOKEN=${NOTION_TOKEN}
       - BMAD_LOG_LEVEL=DEBUG
-      - PYTHONPATH=/app/src
+      - PYTHONPATH=/app
     volumes:
-      # Mount source for development
       - ./src:/app/src:rw
       - ./config:/app/config:rw
+      - ./tests:/app/tests:rw
       - ./.bmad-core:/app/.bmad-core:ro
+      - bmad_dev_data:/app/data
     ports:
-      - "3001:3000"
-    command: ["python", "-m", "bmad_mcp.server"]
+      - "8081:8080"
+      - "3457:3456"
+    command: python -m src.bmad_mcp.server --dev
     profiles:
       - dev
+    networks:
+      - bmad-network
+    
+  # Optional: Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: bmad-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-bmad_redis}
+    restart: unless-stopped
+    networks:
+      - bmad-network
+    profiles:
+      - full
+      
+  # Optional: PostgreSQL for advanced data storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: bmad-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bmad}
+      POSTGRES_USER: ${POSTGRES_USER:-bmad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bmad_secure_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - bmad-network
+    profiles:
+      - full
+      
+  # Optional: Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: bmad-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - bmad-mcp-server
+    restart: unless-stopped
+    networks:
+      - bmad-network
+    profiles:
+      - production
+
+# Named volumes for persistent data
+volumes:
+  bmad_data:
+    driver: local
+  bmad_dev_data:
+    driver: local
+  bmad_tasks:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+# Custom network for service communication
+networks:
+  bmad-network:
+    driver: bridge

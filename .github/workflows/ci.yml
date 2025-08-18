@@ -1,0 +1,343 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.7.1"
+
+jobs:
+  # Code Quality and Linting
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Quality & Linting
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        
+    - name: Run Black (code formatting)
+      run: black --check --diff src/ tests/
+      
+    - name: Run isort (import sorting)
+      run: isort --check-only --diff src/ tests/
+      
+    - name: Run flake8 (linting)
+      run: flake8 src/ tests/
+      
+    - name: Run mypy (type checking)
+      run: mypy src/
+      
+    - name: Run bandit (security linting)
+      run: bandit -r src/
+      
+    - name: Check for security vulnerabilities
+      run: safety check
+
+  # Unit and Integration Tests
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        
+    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --cov=src/bmad_mcp --cov-report=xml --cov-report=html
+        
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  # Docker Build and Test
+  docker:
+    runs-on: ubuntu-latest
+    name: Docker Build & Test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build -t bmad-mcp-server:test .
+        
+    - name: Test Docker image
+      run: |
+        docker run --rm \
+          -e OPENROUTER_API_KEY=test_key \
+          bmad-mcp-server:test \
+          python -m src.bmad_mcp.server --test
+          
+    - name: Test Docker Compose
+      run: |
+        echo "OPENROUTER_API_KEY=test_key" > .env
+        docker-compose -f docker-compose.yml config
+        docker-compose up -d --profile dev
+        sleep 10
+        docker-compose ps
+        docker-compose down
+
+  # Security Scanning
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Documentation Build
+  docs:
+    runs-on: ubuntu-latest
+    name: Documentation Build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install documentation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx-rtd-theme myst-parser
+        
+    - name: Build documentation
+      run: |
+        cd docs && sphinx-build -b html . _build/html
+        
+    - name: Deploy documentation to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html
+
+  # Performance Testing
+  performance:
+    runs-on: ubuntu-latest
+    name: Performance Testing
+    needs: [test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        pip install locust
+        
+    - name: Run performance tests
+      run: |
+        # Start server in background
+        python -m src.bmad_mcp.server &
+        SERVER_PID=$!
+        sleep 5
+        
+        # Run performance tests
+        locust -f tests/performance/locustfile.py --headless -u 10 -r 2 -t 30s --host=http://localhost:8080
+        
+        # Cleanup
+        kill $SERVER_PID
+
+  # Release Build
+  release:
+    runs-on: ubuntu-latest
+    name: Build Release
+    needs: [lint, test, docker, security]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        
+    - name: Build package
+      run: |
+        python -m build
+        
+    - name: Upload to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        twine upload dist/*
+
+  # Docker Release
+  docker-release:
+    runs-on: ubuntu-latest
+    name: Docker Release
+    needs: [lint, test, docker, security]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: bmadproject/bmad-mcp-server
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Deployment to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: [lint, test, docker]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to staging environment
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment commands here
+        # Examples:
+        # - kubectl apply -f k8s/staging/
+        # - docker-compose -f docker-compose.staging.yml up -d
+        # - ansible-playbook staging-deploy.yml
+
+  # Deployment to Production
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [release, docker-release]
+    if: github.event_name == 'release'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to production environment
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment commands here
+        # Examples:
+        # - kubectl apply -f k8s/production/
+        # - docker-compose -f docker-compose.production.yml up -d
+        # - ansible-playbook production-deploy.yml
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Teams
+    needs: [lint, test, docker, security]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: ${{ needs.lint.result == 'success' && needs.test.result == 'success' && needs.docker.result == 'success' && needs.security.result == 'success' }}
+      run: |
+        echo "✅ All checks passed successfully!"
+        # Add notification to Slack, Discord, or email
+        
+    - name: Notify on failure
+      if: ${{ needs.lint.result == 'failure' || needs.test.result == 'failure' || needs.docker.result == 'failure' || needs.security.result == 'failure' }}
+      run: |
+        echo "❌ Some checks failed!"
+        # Add failure notification to Slack, Discord, or email

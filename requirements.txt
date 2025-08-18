@@ -1,28 +1,52 @@
-# Core MCP dependencies
+# BMAD MCP Server - Core Dependencies
+
+# MCP (Model Context Protocol) framework
 mcp>=1.1.0
+
+# Data handling and validation
 pydantic>=2.0.0
+
+# HTTP client for API requests
+httpx>=0.27.0
 aiohttp>=3.8.0
-sse-starlette>=1.6.0
 
 # Configuration and templates
-pyyaml>=6.0
+PyYAML>=6.0
 jinja2>=3.1.0
 
-# AI/LLM integrations
-openai>=1.0.0
-anthropic>=0.25.0
+# Date and time utilities
+python-dateutil>=2.8.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Async support
+asyncio>=3.4.3
+
+# Optional dependencies for enhanced features
+
+# Notion API integration (optional)
+notion-client>=2.0.0
+
+# Advanced scheduling (optional)
+schedule>=1.2.0
+
+# Progress bars and visual feedback (optional)  
+tqdm>=4.66.0
+
+# Color output support (optional)
+colorama>=0.4.6
+
+# Rich text formatting (optional)
+rich>=13.0.0
+
+# JSON handling
+orjson>=3.8.0
 
 # Utilities
 typing-extensions>=4.0.0
 
-# Web server dependencies
+# Server dependencies (for Docker/web interface)
 fastapi>=0.100.0
 uvicorn>=0.20.0
-
-# Development dependencies (optional)
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
-black>=23.0.0
-isort>=5.12.0
-mypy>=1.0.0
-pre-commit>=3.0.0
+sse-starlette>=1.6.0
