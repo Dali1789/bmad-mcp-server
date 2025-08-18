@@ -490,10 +490,19 @@ async def main():
     logger.info("Starting BMAD MCP Server in WEB (SSE) mode...")
     
     app = FastAPI()
+    
+    # Initialize SSE transport with proper configuration
     sse_transport = SseServerTransport("/messages")
+
+    @app.get("/health")
+    async def health_check():
+        """Health check endpoint"""
+        return {"status": "healthy", "service": "bmad-mcp-server", "version": "1.0.0"}
 
     @app.get("/sse")
     async def handle_sse(request: Request):
+        """SSE endpoint for MCP communication"""
+        logger.info("SSE connection established")
         try:
             async with sse_transport.connect_sse(
                 request.scope, request.receive, request._send
@@ -504,7 +513,7 @@ async def main():
                     InitializationOptions(
                         server_name="bmad-mcp-server",
                         server_version="1.0.0",
-                         capabilities={
+                        capabilities={
                             "tools": {},
                             "resources": {},
                             "prompts": {}
@@ -513,13 +522,23 @@ async def main():
                 )
         except Exception as e:
             logger.error(f"Error in SSE connection: {e}")
-            return Response("Error in SSE connection", status_code=500)
+            # Don't return a response here as SSE is a streaming protocol
+            raise
 
     @app.post("/messages")
     async def handle_messages(request: Request):
-        await sse_transport.handle_post_message(
-            request.scope, request.receive, request._send
-        )
+        """Handle MCP messages"""
+        try:
+            # Handle the message without returning a response
+            # The SSE transport will handle the response through the SSE connection
+            await sse_transport.handle_post_message(
+                request.scope, request.receive, request._send
+            )
+        except Exception as e:
+            logger.error(f"Error handling message: {e}")
+            # Let FastAPI handle the error response properly
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail=str(e))
 
     port = int(os.getenv("PORT", 3000))
     config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
