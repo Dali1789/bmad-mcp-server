@@ -2,49 +2,104 @@
 
 🏗️ **Breakthrough Method for Agile AI-driven Development - MCP Server**
 
-Advanced agent routing with OpenRouter integration for multi-model AI development workflows.
+Advanced agent routing with OpenRouter integration - Vollständige Integration bestehender BMAD-Systemkonfigurationen.
 
 ## Overview
 
-The BMAD MCP Server exposes the complete BMAD methodology through the Model Context Protocol, enabling any MCP-compatible IDE (Kilo Code, Claude Code, etc.) to leverage intelligent agent routing and specialized AI models for different development tasks.
+Der BMAD MCP Server integriert die komplette BMAD-Methodologie über das Model Context Protocol und ermöglicht **einheitliche Struktur** - egal von welchem IDE aus gearbeitet wird, jedes IDE hat Zugriff auf die gleichen Projektdateien.
 
-## Features
+## 🎯 Core Features
 
-### 🤖 **Intelligent Agent Routing**
-- **Analyst (Mary)**: Market research, brainstorming, competitive analysis
-- **Architect (Winston)**: System design, architecture documents, technical planning  
-- **Developer**: Implementation, coding standards, technical execution
-- **Project Manager**: Story management, project planning, validation
-- **QA**: Quality assurance, testing, validation checklists
+- **Multi-Model Agent Routing**: Intelligent model selection based on task type
+- **OpenRouter Integration**: Seamless access to multiple AI models with existing system configs
+- **Agent Specialization**: 5 specialized agents (analyst, architect, dev, pm, qa) with proven configurations
+- **Project Detection**: Automatic `.bmad-core` configuration detection with global registry
+- **Universal IDE Access**: Consistent project access across all IDEs - "einheitliche Struktur"
+- **Existing System Integration**: Vollständige Übernahme bestehender BMAD-Konfigurationen
+- **Task Management**: Integrierte Workflows, Templates und Quality Gates
+- **Docker Support**: Production-ready containerized deployment
 
-### 🔄 **Multi-Model Intelligence**
-- **OpenRouter Integration**: Automatic model selection per agent type
-- **Perplexity**: Real-time research and analysis (Analyst)
-- **Claude Opus**: Complex reasoning and architecture (Architect)
-- **Claude Sonnet**: Development and implementation (Developer)
-- **Gemini Pro**: Project management and coordination (PM)
-- **Claude Haiku**: Quick validation and QA (QA)
+## 🤖 Intelligent Agent System
 
-### 📁 **Project-Aware Context**
-- **Automatic .bmad-core detection**: Project-specific configurations
-- **Template System**: 47+ pre-built templates and workflows
-- **Task Automation**: Structured BMAD methodology execution
-- **Document Generation**: Automated PRDs, architectures, stories
+### Bestehende Agent-Konfigurationen (übernommen)
 
-## Quick Start
+#### 📊 **BMAD Analyst**
+- **Model**: `perplexity/llama-3.1-sonar-large-128k-online`
+- **Temperature**: `0.2` | **Max Tokens**: `8000` | **Timeout**: `90s`
+- **Einsatz**: Market research, competitive analysis, data gathering, trend analysis
+- **Tools**: Web research, data analysis, Notion integration, Playwright
+
+#### 🏗️ **BMAD Architect** 
+- **Model**: `anthropic/claude-3-opus`
+- **Temperature**: `0.3` | **Max Tokens**: `8000` | **Timeout**: `120s`
+- **Einsatz**: System architecture, technical design, infrastructure planning
+- **Tools**: System design, documentation, GitHub integration, performance analysis
+
+#### 💻 **BMAD Dev**
+- **Model**: `anthropic/claude-3.5-sonnet`
+- **Temperature**: `0.1` | **Max Tokens**: `4000` | **Timeout**: `60s`
+- **Einsatz**: Coding, bug fixes, implementation, code reviews
+- **Tools**: Auto-linting, testing frameworks, GitHub integration, code analysis
+
+#### 📋 **BMAD PM**
+- **Model**: `google/gemini-pro-1.5`
+- **Temperature**: `0.4` | **Max Tokens**: `3000` | **Timeout**: `45s`
+- **Einsatz**: Project planning, resource management, timeline coordination
+- **Tools**: Task management, reporting, Notion integration, calendar
+
+#### 🧪 **BMAD QA**
+- **Model**: `anthropic/claude-3-haiku`
+- **Temperature**: `0.1` | **Max Tokens**: `4000` | **Timeout**: `60s`
+- **Einsatz**: Testing, quality checks, validation, bug reporting
+- **Tools**: Test automation, bug tracking, performance testing, security testing
+
+## 🌐 Einheitliche Struktur - Global Registry
+
+**Das Hauptziel**: Egal von welchem IDE aus - jedes IDE hat Zugriff auf die gleichen Projektdateien!
+
+### Global Registry Features
+- **Zentrale Projektverwaltung**: Alle BMAD-Projekte global registriert
+- **Cross-IDE Synchronisation**: Symlinks für universellen Zugriff
+- **Active Project Management**: Globales aktives Projekt für alle IDEs
+- **Shared Resources**: Gemeinsame Templates, Agents, Workflows
+
+### Unterstützte IDEs
+- ✅ **Kilo Code** - Native MCP Integration
+- ✅ **Claude Code** - Vollständige Tool-Unterstützung
+- ✅ **VS Code** - Über MCP Extensions
+- ✅ **Cursor** - MCP-kompatibel
+
+## 📁 Bestehende System-Integration
+
+### Notion-Datenbanken (übernommen)
+```yaml
+notion_databases:
+  business_resources: "21d5e4b84c44808db635f37c5cd8f483"
+  gutachten_projects: "1765e4b8-4c44-811c-92c7-f310901a5b6c"
+  gutachten_tasks: "1765e4b8-4c44-813d-b906-e6b343d745fd"
+  services: "17648f3e-4cb0-8108-acdb-c7e2b2c604e2"
+  # ... weitere bestehende Datenbanken
+```
+
+### Project Templates (erweitert)
+- **Website**: 4 Wochen Standard-Workflow
+- **App**: 8 Wochen Full-Stack Development
+- **Automation**: 3 Wochen Automatisierung
+- **Gutachten**: 1 Woche Gutachten-Workflow
+
+## 🚀 Quick Start
 
 ### Installation
-
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/bmad-mcp-server.git
+git clone https://github.com/FaberDS/bmad-mcp-server.git
 cd bmad-mcp-server
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure OpenRouter API
-export OPENROUTER_API_KEY="your-api-key-here"
+# Configure OpenRouter API (bestehende Konfiguration)
+export OPENROUTER_API_KEY="your-openrouter-key"
 
 # Start server
 python -m bmad_mcp.server
@@ -67,7 +122,7 @@ python -m bmad_mcp.server
 }
 ```
 
-#### Claude Code
+#### Claude Code (claude_desktop_config.json)
 ```json
 {
   "mcpServers": {
@@ -79,64 +134,84 @@ python -m bmad_mcp.server
 }
 ```
 
-## Available Tools
+## 🛠️ Available Tools
+
+### Global Registry Management
+- `bmad_register_project`: Projekt in globaler Registry registrieren
+- `bmad_set_active_project`: Aktives Projekt für universellen Zugriff setzen
+- `bmad_list_projects`: Alle registrierten Projekte anzeigen
+- `bmad_get_registry_info`: Registry-Status und -Informationen
 
 ### Agent Management
-- `bmad_activate_agent`: Switch to specific agent (analyst, architect, dev, pm, qa)
-- `bmad_list_agents`: Show available agents and capabilities
-- `bmad_get_agent_help`: Get agent-specific commands
+- `bmad_activate_agent`: Agent wechseln (analyst, architect, dev, pm, qa)
+- `bmad_list_agents`: Verfügbare Agents und Capabilities anzeigen
+- `bmad_get_agent_help`: Agent-spezifische Hilfe
 
-### Project Operations  
-- `bmad_detect_project`: Scan for .bmad-core configuration
-- `bmad_load_templates`: Access project templates
-- `bmad_execute_task`: Run BMAD tasks with agent context
+### Project Operations
+- `bmad_detect_project`: .bmad-core Konfiguration scannen
+- `bmad_execute_task`: BMAD-Tasks mit Agent-Kontext ausführen
+- `bmad_query_with_model`: Agent-spezifische Model-Anfragen
 
-### Document Generation
-- `bmad_create_document`: Generate docs using templates
-- `bmad_validate_document`: Run quality checklists
-- `bmad_shard_document`: Split large documents
+### Document & Workflow Management
+- `bmad_create_document`: Dokumente mit Templates erstellen
+- `bmad_run_checklist`: Quality Checklists ausführen
+- `bmad_load_templates`: Projekt-Templates laden
 
-### Workflow Management
-- `bmad_create_story`: Generate user stories
-- `bmad_validate_story`: Check story completion
-- `bmad_run_checklist`: Execute BMAD checklists
-
-## Architecture
+## 🏗️ Architecture
 
 ```
 BMAD MCP Server
-├── Agent Router (5 specialized agents)
-├── OpenRouter Integration (multi-model routing)
-├── Project Detection (.bmad-core scanning)
-├── Template Engine (47+ workflows)
-├── MCP Protocol Layer (standard tools/resources)
-└── Context Management (project-aware sessions)
+├── 🌐 Global Registry (einheitliche Struktur)
+├── 🤖 Agent Router (5 spezialisierte Agents)
+├── 🔄 OpenRouter Integration (bestehende Configs)
+├── 📁 Project Detection (.bmad-core scanning)
+├── 📋 Task Management (Workflows, Templates)
+├── 🔧 MCP Protocol Layer (Standard Tools/Resources)
+└── 📊 Context Management (projekt-übergreifend)
 ```
 
-## Configuration
+## ⚙️ Configuration
 
-### OpenRouter Models
+### Agent-Konfiguration (aus bestehendem System)
 ```yaml
 agents:
-  analyst: "perplexity/llama-3.1-sonar-large-128k-online"
-  architect: "anthropic/claude-3-opus"
-  dev: "anthropic/claude-3.5-sonnet"
-  pm: "google/gemini-pro-1.5"
-  qa: "anthropic/claude-3-haiku"
+  analyst:
+    model: "perplexity/llama-3.1-sonar-large-128k-online"
+    temperature: 0.2
+    max_tokens: 8000
+    timeout: 90000
+    
+  architect:
+    model: "anthropic/claude-3-opus"
+    temperature: 0.3
+    max_tokens: 8000
+    timeout: 120000
+    
+  dev:
+    model: "anthropic/claude-3.5-sonnet"
+    temperature: 0.1
+    max_tokens: 4000
+    timeout: 60000
 ```
 
-### BMAD Core Structure
+### Global BMAD Structure
 ```
-.bmad-core/
-├── agents/          # Agent definitions
-├── tasks/           # Executable workflows
-├── templates/       # Document templates
-├── checklists/      # Quality validation
-├── workflows/       # Process definitions
-└── core-config.yaml # Project configuration
+~/.bmad-global/
+├── project-registry.json    # Globale Projekt-Registry
+├── global-config.yaml      # System-weite Konfiguration
+├── projects/               # Projekt-Symlinks für universellen Zugriff
+└── shared-resources/       # Gemeinsame Templates & Workflows
+
+config/bmad-core/
+├── agents/                 # Agent-Definitionen
+├── tasks/                  # Task-Templates
+├── templates/              # Dokument-Templates
+├── checklists/            # Quality Gates
+├── workflows/             # Prozess-Definitionen
+└── core-config.yaml       # Core-Konfiguration
 ```
 
-## Deployment
+## 🐳 Deployment
 
 ### Docker
 ```bash
@@ -144,23 +219,80 @@ docker build -t bmad-mcp-server .
 docker run -p 3000:3000 -e OPENROUTER_API_KEY=your-key bmad-mcp-server
 ```
 
-### Cloud Deployment
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed cloud deployment instructions.
+### Docker Compose
+```bash
+docker-compose up -d
+```
 
-## Contributing
+## 📊 Task Management Integration
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+### Workflow States (übernommen)
+- `backlog` → `todo` → `in_progress` → `review` → `testing` → `done`
 
-## License
+### Quality Gates
+- ✅ Auto-Linting aktiviert
+- ✅ Code Coverage > 80%
+- ✅ Performance Benchmarks
+- ✅ Security Scans
 
-MIT License - see [LICENSE](LICENSE) file for details.
+### Notion Integration
+- Automatische Task-Synchronisation
+- Projekt-übergreifende Dokumentation
+- Performance Metrics Tracking
 
-## Support
+## 🎯 Success Metrics
+
+- **Cross-IDE Consistency**: Gleiche Projektdateien überall verfügbar
+- **Agent Performance**: Model-spezifische Optimierung
+- **Development Velocity**: Beschleunigte Entwicklungszyklen
+- **Quality Improvement**: Reduzierte Bug-Rate durch Quality Gates
+
+## 💡 Usage Examples
+
+### Projekt registrieren
+```bash
+# Bestehende .bmad-core Projekte automatisch registrieren
+bmad_register_project /path/to/project "mein-projekt"
+bmad_set_active_project "mein-projekt"
+```
+
+### Agent-spezifische Arbeit
+```bash
+# Marktanalyse mit Analyst
+bmad_activate_agent analyst
+bmad_query_with_model "Analysiere den KI-Markt 2025"
+
+# Architektur mit Architect
+bmad_activate_agent architect
+bmad_query_with_model "Designe Microservices-Architektur"
+```
+
+## 📈 Roadmap
+
+- [ ] **Weitere Agents**: Hinzufügung zusätzlicher spezialisierter Agents
+- [ ] **Performance Optimization**: Model-Caching und Response-Optimierung
+- [ ] **Extended IDE Support**: Weitere IDE-Integrationen
+- [ ] **Advanced Workflows**: Komplexe Multi-Agent Workflows
+- [ ] **Analytics Dashboard**: Real-time Performance Monitoring
+
+## 🤝 Contributing
+
+1. Fork das Repository
+2. Feature Branch erstellen (`git checkout -b feature/amazing-feature`)
+3. Änderungen committen (`git commit -m 'Add amazing feature'`)
+4. Push to Branch (`git push origin feature/amazing-feature`)
+5. Pull Request öffnen
+
+## 📄 License
+
+MIT License - siehe [LICENSE](LICENSE) für Details.
+
+## 🆘 Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issues](https://github.com/yourusername/bmad-mcp-server/issues)
-- 💬 [Discussions](https://github.com/yourusername/bmad-mcp-server/discussions)
+- 🐛 [Issues](https://github.com/FaberDS/bmad-mcp-server/issues)
+- 💬 [Discussions](https://github.com/FaberDS/bmad-mcp-server/discussions)
+
+---
+
+**🌟 Einheitliche Struktur erreicht**: Projektdateien von jedem IDE aus zugänglich!
