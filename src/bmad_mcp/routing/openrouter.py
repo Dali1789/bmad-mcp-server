@@ -20,13 +20,62 @@ class OpenRouterClient:
         self.base_url = "https://openrouter.ai/api/v1"
         self.session: Optional[aiohttp.ClientSession] = None
         
-        # Agent to model mapping
+        # Agent to model mapping based on existing BMAD system configuration
         self.agent_models = {
             "analyst": "perplexity/llama-3.1-sonar-large-128k-online",
             "architect": "anthropic/claude-3-opus", 
             "dev": "anthropic/claude-3.5-sonnet",
             "pm": "google/gemini-pro-1.5",
             "qa": "anthropic/claude-3-haiku"
+        }
+        
+        # Agent-specific configuration from existing system
+        self.agent_configs = {
+            "analyst": {
+                "temperature": 0.2,
+                "max_tokens": 8000,
+                "timeout": 90000,
+                "headers": {
+                    "HTTP-Referer": "https://bmad-Claude.local",
+                    "X-Title": "BMAD Agent: analyst"
+                }
+            },
+            "architect": {
+                "temperature": 0.3,
+                "max_tokens": 8000,
+                "timeout": 120000,
+                "headers": {
+                    "HTTP-Referer": "https://bmad-Claude.local",
+                    "X-Title": "BMAD Agent: architect"
+                }
+            },
+            "dev": {
+                "temperature": 0.1,
+                "max_tokens": 4000,
+                "timeout": 60000,
+                "headers": {
+                    "HTTP-Referer": "https://bmad-Claude.local",
+                    "X-Title": "BMAD Agent: dev"
+                }
+            },
+            "pm": {
+                "temperature": 0.4,
+                "max_tokens": 3000,
+                "timeout": 45000,
+                "headers": {
+                    "HTTP-Referer": "https://bmad-Claude.local",
+                    "X-Title": "BMAD Agent: pm"
+                }
+            },
+            "qa": {
+                "temperature": 0.1,
+                "max_tokens": 4000,
+                "timeout": 60000,
+                "headers": {
+                    "HTTP-Referer": "https://bmad-Claude.local",
+                    "X-Title": "BMAD Agent: qa"
+                }
+            }
         }
     
     async def _get_session(self) -> aiohttp.ClientSession:
@@ -51,8 +100,8 @@ class OpenRouterClient:
         prompt: str,
         agent: str = "dev",
         context: Optional[Dict[str, Any]] = None,
-        max_tokens: int = 4000,
-        temperature: float = 0.1
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None
     ) -> str:
         """Query a model via OpenRouter"""
         
@@ -61,8 +110,24 @@ class OpenRouterClient:
         
         model = self.agent_models.get(agent, self.agent_models["dev"])
         
+        # Get agent-specific configuration
+        agent_config = self.agent_configs.get(agent, self.agent_configs["dev"])
+        
+        # Use agent-specific values or provided parameters
+        final_max_tokens = max_tokens if max_tokens is not None else agent_config["max_tokens"]
+        final_temperature = temperature if temperature is not None else agent_config["temperature"]
+        
         try:
-            session = await self._get_session()
+            # Create session with agent-specific headers
+            if self.session is None or self.session.closed:
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                    **agent_config["headers"]
+                }
+                self.session = aiohttp.ClientSession(headers=headers)
+            
+            session = self.session
             
             # Prepare messages
             messages = []
@@ -85,8 +150,8 @@ class OpenRouterClient:
             payload = {
                 "model": model,
                 "messages": messages,
-                "max_tokens": max_tokens,
-                "temperature": temperature,
+                "max_tokens": final_max_tokens,
+                "temperature": final_temperature,
                 "stream": False
             }
             

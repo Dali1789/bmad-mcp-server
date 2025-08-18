@@ -76,10 +76,24 @@ class BMadGlobalRegistry:
         """Erstelle globale BMAD-Konfiguration"""
         global_config = {
             "bmad_global": {
-                "version": "1.0.0",
+                "version": "2.0.0",
                 "registry_path": str(self.global_bmad_home),
                 "shared_resources_path": str(self.shared_resources),
                 "auto_discover_projects": True
+            },
+            "notion_databases": {
+                "business_resources": "21d5e4b84c44808db635f37c5cd8f483",
+                "gutachten_projects": "1765e4b8-4c44-811c-92c7-f310901a5b6c",
+                "gutachten_tasks": "1765e4b8-4c44-813d-b906-e6b343d745fd",
+                "gutachten_resources": "1765e4b8-4c44-818c-b4ea-f297d65a40b1",
+                "time_tracking": "1765e4b8-4c44-81a4-bbd2-e2fbbf012269",
+                "services": "17648f3e-4cb0-8108-acdb-c7e2b2c604e2",
+                "proposals": "17648f3e-4cb0-810f-ab1f-c1a1e988fda0",
+                "invoices": "17648f3e-4cb0-8139-8c1e-e5b59a0dcaa8",
+                "client_portal": "17648f3e-4cb0-813c-8d80-c52bb6b37b24",
+                "events": "17648f3e-4cb0-8162-a074-c1c1f90bbcd5",
+                "contracts": "17648f3e-4cb0-8157-9b6e-e28f96b4f03d",
+                "expenses": "17648f3e-4cb0-8173-9797-d1cd1c491e13"
             },
             "default_agents": {
                 "analyst": {

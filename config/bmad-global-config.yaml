@@ -1,0 +1,153 @@
+bmad_system:
+  version: "2.0.0"
+  type: "global_configuration"
+  description: "BMAD Global System Configuration - Projektübergreifend"
+
+global_integrations:
+  notion:
+    enabled: true
+    version: "2022-06-28"
+    description: "Globale Notion Integration für alle Projekte"
+    databases:
+      business_resources: "21d5e4b84c44808db635f37c5cd8f483"
+      system_documentation: "BMAD_DOCS_DB_ID"
+      global_tasks: "GLOBAL_TASKS_DB_ID"
+      performance_metrics: "PERFORMANCE_DB_ID"
+
+  openrouter:
+    enabled: true
+    base_url: "https://openrouter.ai/api/v1"
+    description: "Multi-Model AI Routing für alle BMAD Agents"
+
+  slack:
+    enabled: true
+    description: "Team Communication für alle Projekte"
+
+bmad_agents:
+  claude-code-current:
+    model: "claude-sonnet-4-native"
+    provider: "claude-code-direct" 
+    temperature: 0.1
+    description: "Current Claude Code Session - Direct Access"
+    tools: ["all-mcp-tools", "file-operations", "bash", "auto-linting"]
+    mcp_access: ["all-available"]
+    capabilities: ["native-claude-code", "full-system-access", "real-time"]
+
+  analyst:
+    model: "perplexity/llama-3.1-sonar-large-128k-online"
+    provider: "openrouter"
+    temperature: 0.2
+    max_tokens: 8000
+    timeout: 90000
+    description: "Analysis & Research Agent"
+    tools: ["playwright", "web-research", "data-analysis"]
+    mcp_access: ["notion", "web-search", "playwright"]
+    when_to_use: "Market research, competitive analysis, data gathering, trend analysis"
+
+  architect:
+    model: "anthropic/claude-3-opus"
+    provider: "openrouter"
+    temperature: 0.3
+    max_tokens: 8000
+    timeout: 120000
+    description: "Architecture & Design Agent"
+    tools: ["system-design", "documentation", "planning"]
+    mcp_access: ["notion", "github", "slack"]
+    when_to_use: "System architecture, technical design, infrastructure planning"
+
+  dev:
+    model: "anthropic/claude-3.5-sonnet"
+    provider: "openrouter"
+    temperature: 0.1
+    max_tokens: 4000
+    timeout: 60000
+    description: "Development Agent"
+    tools: ["auto-linting", "code-review", "testing"]
+    mcp_access: ["notion", "github", "slack"]
+    when_to_use: "Coding, bug fixes, implementation, code reviews"
+
+  pm:
+    model: "google/gemini-pro-1.5"
+    provider: "openrouter"
+    temperature: 0.4
+    max_tokens: 3000
+    timeout: 45000
+    description: "Project Manager Agent"
+    tools: ["task-management", "reporting", "capacity-planning"]
+    mcp_access: ["notion", "slack", "calendar"]
+    when_to_use: "Project planning, resource management, timeline coordination"
+
+  qa:
+    model: "anthropic/claude-3-haiku"
+    provider: "openrouter"
+    temperature: 0.1
+    max_tokens: 4000
+    timeout: 60000
+    description: "Quality Assurance Agent"
+    tools: ["testing", "validation", "bug-reporting"]
+    mcp_access: ["notion", "github", "slack"]
+    when_to_use: "Testing, quality checks, validation, bug reporting"
+
+global_features:
+  auto_linting:
+    enabled: true
+    global_settings:
+      auto_fix: true
+      enable_prettier: true
+      enable_eslint: true
+      enable_typecheck: false
+
+  real_time_dashboard:
+    enabled: true
+    update_interval: 300000
+    metrics: ["project_health", "agent_workload", "task_completion"]
+
+  intelligent_routing:
+    enabled: true
+    cost_optimization: true
+    performance_tracking: true
+
+  global_memory:
+    enabled: true
+    session_tracking: true
+    cross_project_context: true
+
+project_templates:
+  website:
+    phases: ["Planning", "Design", "Development", "Testing", "Deployment", "Optimization"]
+    default_duration_weeks: 4
+    required_agents: ["dev", "architect", "qa"]
+
+  app:
+    phases: ["Requirements", "Architecture", "UI/UX", "Backend", "Frontend", "Testing", "Release"]
+    default_duration_weeks: 8
+    required_agents: ["dev", "architect", "qa", "pm"]
+
+  automation:
+    phases: ["Analysis", "Design", "Implementation", "Testing", "Deployment", "Monitoring"]
+    default_duration_weeks: 3
+    required_agents: ["dev", "analyst", "qa"]
+
+  gutachten:
+    phases: ["Erfassung", "Analyse", "Bewertung", "Dokumentation", "Review", "Lieferung"]
+    default_duration_weeks: 1
+    required_agents: ["analyst", "qa"]
+
+task_management:
+  workflow_states: ["backlog", "todo", "in_progress", "review", "testing", "done"]
+  priorities: ["low", "medium", "high", "critical"]
+  auto_assignment: true
+  time_tracking: true
+  quality_gates: true
+
+monitoring:
+  performance_tracking: true
+  cost_monitoring: true
+  usage_analytics: true
+  error_reporting: true
+
+security:
+  api_key_rotation: false
+  access_logging: true
+  rate_limiting: true
+  secret_management: "environment_variables"

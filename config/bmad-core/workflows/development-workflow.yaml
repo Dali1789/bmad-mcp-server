@@ -1,0 +1,157 @@
+name: "Development Workflow"
+description: "Standard-Workflow für Entwicklungsaufgaben"
+version: "1.0.0"
+
+stages:
+  - name: "planning"
+    title: "Planung"
+    description: "Anforderungsanalyse und technische Planung"
+    agent: "architect"
+    tasks:
+      - "requirements_analysis"
+      - "technical_design"
+      - "task_breakdown"
+    deliverables:
+      - "Technical Specification"
+      - "Implementation Plan"
+    exit_criteria:
+      - "Requirements documented"
+      - "Architecture approved"
+      - "Tasks defined"
+
+  - name: "implementation" 
+    title: "Implementation"
+    description: "Code-Entwicklung und Umsetzung"
+    agent: "dev"
+    tasks:
+      - "feature_development"
+      - "unit_testing"
+      - "code_documentation"
+    deliverables:
+      - "Working Code"
+      - "Unit Tests"
+      - "Code Documentation"
+    exit_criteria:
+      - "Functionality implemented"
+      - "Tests passing"
+      - "Code reviewed"
+
+  - name: "testing"
+    title: "Testing"
+    description: "Qualitätssicherung und Validation"
+    agent: "qa"
+    tasks:
+      - "integration_testing"
+      - "performance_testing"
+      - "bug_verification"
+    deliverables:
+      - "Test Report"
+      - "Bug Reports"
+      - "Performance Metrics"
+    exit_criteria:
+      - "All tests passing"
+      - "Performance acceptable"
+      - "No critical bugs"
+
+  - name: "deployment"
+    title: "Deployment"
+    description: "Bereitstellung und Go-Live"
+    agent: "dev"
+    tasks:
+      - "deployment_preparation"
+      - "production_deployment"
+      - "monitoring_setup"
+    deliverables:
+      - "Deployed Application"
+      - "Monitoring Dashboard"
+      - "Rollback Plan"
+    exit_criteria:
+      - "Successfully deployed"
+      - "Monitoring active"
+      - "Stakeholders notified"
+
+  - name: "documentation"
+    title: "Dokumentation"
+    description: "Abschließende Dokumentation und Übergabe"
+    agent: "pm"
+    tasks:
+      - "user_documentation"
+      - "project_closeout"
+      - "lessons_learned"
+    deliverables:
+      - "User Manual"
+      - "Project Report"
+      - "Knowledge Transfer"
+    exit_criteria:
+      - "Documentation complete"
+      - "Project closed"
+      - "Knowledge transferred"
+
+transitions:
+  - from: "planning"
+    to: "implementation"
+    condition: "Architecture approved"
+
+  - from: "implementation"
+    to: "testing"
+    condition: "Code review passed"
+
+  - from: "testing"
+    to: "deployment"
+    condition: "All tests passed"
+
+  - from: "deployment"
+    to: "documentation"
+    condition: "Deployment successful"
+
+rollback_triggers:
+  - stage: "deployment"
+    condition: "Critical issues found"
+    action: "Rollback to previous version"
+
+  - stage: "testing"
+    condition: "Major bugs discovered"
+    action: "Return to implementation"
+
+quality_gates:
+  - stage: "implementation"
+    checks:
+      - "Code coverage > 80%"
+      - "Linting passed"
+      - "Security scan clean"
+
+  - stage: "testing"
+    checks:
+      - "Performance benchmarks met"
+      - "No critical bugs"
+      - "User acceptance criteria met"
+
+  - stage: "deployment"
+    checks:
+      - "Smoke tests passed"
+      - "Monitoring active"
+      - "Rollback plan tested"
+
+notifications:
+  slack:
+    channels: ["#development", "#qa", "#project-updates"]
+    events: ["stage_complete", "quality_gate_failed", "deployment_complete"]
+
+  notion:
+    databases:
+      - "project_tasks"
+      - "development_logs"
+    updates: ["status_changes", "deliverable_completion"]
+
+metrics:
+  - name: "cycle_time"
+    description: "Time from planning to deployment"
+    target: "< 2 weeks"
+
+  - name: "defect_rate"
+    description: "Bugs found in production"
+    target: "< 2 per release"
+
+  - name: "code_quality"
+    description: "Code coverage and complexity"
+    target: "> 80% coverage, < 10 complexity"

@@ -19,7 +19,10 @@ class BMadLoader:
             default_bmad_path,
             ".bmad-core",
             os.path.expanduser("~/.bmad-core"),
-            os.path.join(os.path.dirname(__file__), "..", "..", "..", "config", "bmad-core")
+            os.path.join(os.path.dirname(__file__), "..", "..", "..", "config", "bmad-core"),
+            # Include paths from existing BMAD system
+            os.path.expanduser("~/AppData/Roaming/Claude/.bmad-core"),
+            os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "gutachter-app")
         ]
         self.default_paths = [p for p in self.default_paths if p is not None]
     

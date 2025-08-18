@@ -1,0 +1,75 @@
+bmad_core:
+  version: "2.0.0"
+  project_type: "mcp-server"
+  global_config: "../bmad-global-config.yaml"
+
+agents:
+  available: ["analyst", "architect", "dev", "pm", "qa"]
+  default: "dev"
+
+task_management:
+  enabled: true
+  notion_integration: true
+  auto_sync: true
+  workflow_states:
+    - "backlog"
+    - "todo"  
+    - "in_progress"
+    - "review"
+    - "testing"
+    - "done"
+  
+  priorities:
+    - "low"
+    - "medium"
+    - "high"
+    - "critical"
+
+  categories:
+    - "development"
+    - "research"
+    - "architecture"
+    - "testing"
+    - "documentation"
+    - "deployment"
+
+quality_gates:
+  enabled: true
+  auto_linting: true
+  code_review: true
+  testing_required: true
+
+workflows:
+  development:
+    - "task_analysis"
+    - "implementation"
+    - "code_review"
+    - "testing"
+    - "documentation"
+    - "deployment"
+
+  research:
+    - "problem_definition"
+    - "data_gathering"
+    - "analysis"
+    - "documentation"
+    - "presentation"
+
+  architecture:
+    - "requirements_analysis"
+    - "system_design"
+    - "documentation"
+    - "review"
+    - "approval"
+
+integrations:
+  mcp_servers:
+    - "notion"
+    - "github"
+    - "slack"
+    - "openrouter"
+  
+  external_tools:
+    - "claude-code-router"
+    - "auto-linting"
+    - "performance-monitoring"
