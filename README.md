@@ -22,6 +22,13 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 - **Notion Integration**: Bi-directional sync with Notion databases
 - **TodoWrite Bridge**: Seamless Claude integration
 
+### 🎨 **Template-System & Standardisierte Projektstrukturen** ⭐ NEW!
+- **6 Projekt-Templates**: standard, web-app, api, mobile, data-science, infrastructure
+- **Automatische Struktur-Erstellung**: Einheitliche `.bmad-core/` Verzeichnisse
+- **Auto-Discovery**: Erkennt automatisch neue BMAD-Projekte
+- **Migration-Tools**: Migriert bestehende Projekte auf BMAD v2.0 Standard
+- **Zero-Setup**: Neue Projekte sind sofort produktiv mit kompletter Konfiguration
+
 ### 🔄 **Enhanced Features**
 - **Time-based Monitoring**: Scheduled reminders and progress checks
 - **Work Day Simulation**: Demo modes and realistic progression testing
@@ -133,6 +140,14 @@ Add to your IDE's MCP configuration:
 | `bmad_create_document` | Generate documents from templates | Automated documentation |
 | `bmad_run_checklist` | Quality assurance checklists | QA workflows |
 
+### 🎨 **Template-System** ⭐ NEW!
+| Tool | Description | Example |
+|------|-------------|---------|
+| `bmad_create_project` | Create project with standardized structure | `path`, `template` |
+| `bmad_list_project_templates` | Show all available templates | 6 templates available |
+| `bmad_get_project_template_info` | Detailed template information | Features, structure |
+| `bmad_migrate_project_to_standard` | Migrate existing project | Auto-backup, structure |
+
 ## 📊 **Usage Examples**
 
 ### Basic Task Management
@@ -195,6 +210,37 @@ bmad_register_project(
 # Get project overview
 bmad_get_project_status()
 ```
+
+### Template-System Usage ⭐ NEW!
+```python
+# List available templates
+bmad_list_project_templates()
+
+# Get template details
+bmad_get_project_template_info(template_name="web-app")
+
+# Create new project with template
+bmad_create_project(
+    project_path="./my-web-app",
+    template="web-app",
+    name="My Web Application",
+    description="Modern React-based web application"
+)
+
+# Migrate existing project
+bmad_migrate_project_to_standard(
+    project_path="./legacy-project",
+    backup=True
+)
+```
+
+### Available Templates
+- **standard**: Basic BMAD project with full structure
+- **web-app**: Frontend/Backend with React/Vue/Angular support
+- **api**: REST/GraphQL APIs with OpenAPI documentation
+- **mobile**: React Native/Flutter cross-platform apps
+- **data-science**: ML/Jupyter with notebooks and data pipelines
+- **infrastructure**: Docker/Terraform/Kubernetes deployments
 
 ### Simulation & Testing
 ```python
@@ -313,6 +359,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📈 **Roadmap**
 
+### ✅ **Recently Completed (v2.0)**
+- [x] **Template-System**: 6 standardized project templates
+- [x] **Auto-Discovery**: Automatic project detection and integration
+- [x] **Migration Tools**: Legacy project migration to BMAD v2.0
+- [x] **Standardized Structure**: Unified `.bmad-core/` project layout
+
+### 🔄 **In Progress**
+- [ ] **Enhanced Templates**: Custom template creation and sharing
+- [ ] **Team Templates**: Multi-developer project templates
+- [ ] **Template Marketplace**: Community template repository
+
+### 🚀 **Planned Features**
 - [ ] **Web Dashboard**: Browser-based task management interface
 - [ ] **Team Collaboration**: Multi-user project support  
 - [ ] **Advanced Analytics**: Performance insights and reporting
