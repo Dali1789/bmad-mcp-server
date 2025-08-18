@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+
 from typing import Any, Dict, List, Optional, Sequence
 
 from mcp.server import Server
@@ -491,10 +492,11 @@ async def main():
             InitializationOptions(
                 server_name="bmad-mcp-server",
                 server_version="1.0.0",
-                capabilities=server_instance.server.get_capabilities(
-                    notification_options=None,
-                    experimental_capabilities=None
-                )
+                capabilities={
+                    "tools": {},
+                    "resources": {},
+                    "prompts": {}
+                }
             )
         )
 
