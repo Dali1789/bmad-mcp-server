@@ -4,7 +4,7 @@ BMAD Core - Core functionality and system components
 
 from .bmad_loader import BMadLoader
 from .project_detector import ProjectDetector
-from .global_registry import GlobalRegistry
+from .global_registry import BMadGlobalRegistry, global_registry
 from .task_tracker import BMadTaskTracker, BMadTask
 from .todowrite_bridge import TodoWriteBridge
 from .notion_sync import NotionTaskSync
@@ -16,7 +16,8 @@ from .realtime_updater import BMadRealtimeUpdater
 __all__ = [
     'BMadLoader',
     'ProjectDetector', 
-    'GlobalRegistry',
+    'BMadGlobalRegistry',
+    'global_registry',
     'BMadTaskTracker',
     'BMadTask',
     'TodoWriteBridge',
