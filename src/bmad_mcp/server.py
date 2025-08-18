@@ -33,6 +33,7 @@ from pydantic import BaseModel
 
 from .agents import AgentManager
 from .agents.coder import BMadCoderAgent
+from .agents.serena_bridge import BMadSerenaAgent
 from .core import BMadLoader, ProjectDetector
 from .core.global_registry import global_registry
 from .routing import OpenRouterClient
@@ -61,8 +62,9 @@ class BMadMCPServer:
             global_registry=self.global_registry
         )
         
-        # Coder Agent
-        self.coder_agent = BMadCoderAgent()
+        # Coder Agents
+        self.coder_agent = BMadCoderAgent()  # Fallback Basic Agent
+        self.serena_agent = BMadSerenaAgent()  # Primary Serena Bridge Agent
         
         # Current context
         self.current_agent = None
@@ -651,6 +653,223 @@ class BMadMCPServer:
                     name="bmad_coder_list_memories",
                     description="List all available memories",
                     inputSchema={"type": "object", "properties": {}}
+                ),
+                # Serena Bridge Tools (Full Serena Integration)
+                Tool(
+                    name="bmad_serena_initialize",
+                    description="Initialize Serena Bridge for professional code analysis",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_serena_activate_project",
+                    description="Activate project with full Serena LSP integration",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_path": {
+                                "type": "string",
+                                "description": "Absolute path to the project"
+                            },
+                            "project_name": {
+                                "type": "string",
+                                "description": "Optional project name"
+                            }
+                        },
+                        "required": ["project_path"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_find_symbol",
+                    description="Professional semantic symbol search with Language Server",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_name": {
+                                "type": "string",
+                                "description": "Name of the symbol to search for"
+                            },
+                            "symbol_type": {
+                                "type": "string",
+                                "description": "Type of symbol (function, class, variable, etc.)"
+                            },
+                            "local_only": {
+                                "type": "boolean",
+                                "description": "Search only in current file",
+                                "default": False
+                            }
+                        },
+                        "required": ["symbol_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_get_symbols_overview",
+                    description="Professional symbol overview with LSP analysis",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "Path to the file"
+                            }
+                        },
+                        "required": ["file_path"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_find_referencing_symbols",
+                    description="Professional 'Go to References' with Language Server",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "symbol_type": {
+                                "type": "string",
+                                "description": "Optional - type of the symbol"
+                            }
+                        },
+                        "required": ["symbol_location"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_insert_after_symbol",
+                    description="Professional symbol-based code insertion with LSP",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Code to insert"
+                            }
+                        },
+                        "required": ["symbol_location", "content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_replace_symbol_body",
+                    description="Professional symbol body replacement with LSP",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "new_content": {
+                                "type": "string",
+                                "description": "New symbol content"
+                            }
+                        },
+                        "required": ["symbol_location", "new_content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_onboarding",
+                    description="Professional project onboarding with Serena's intelligence",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_path": {
+                                "type": "string",
+                                "description": "Project path (optional, uses active project)"
+                            }
+                        }
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_get_project_summary", 
+                    description="Comprehensive project analysis with Serena's full power",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_serena_execute_shell_command",
+                    description="Execute shell commands via Serena integration",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "command": {
+                                "type": "string",
+                                "description": "Command to execute"
+                            },
+                            "working_dir": {
+                                "type": "string",
+                                "description": "Working directory"
+                            }
+                        },
+                        "required": ["command"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_search_for_pattern",
+                    description="Advanced pattern search with Serena's intelligence",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "description": "Search pattern"
+                            },
+                            "file_types": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "File types to search"
+                            },
+                            "case_sensitive": {
+                                "type": "boolean",
+                                "description": "Case sensitive search",
+                                "default": False
+                            }
+                        },
+                        "required": ["pattern"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_write_memory",
+                    description="Store memories with Serena's memory system",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "memory_name": {
+                                "type": "string",
+                                "description": "Name of the memory"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Memory content"
+                            }
+                        },
+                        "required": ["memory_name", "content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_read_memory",
+                    description="Read memories from Serena's memory system",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "memory_name": {
+                                "type": "string",
+                                "description": "Name of the memory"
+                            }
+                        },
+                        "required": ["memory_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_serena_list_memories",
+                    description="List all memories in Serena's memory system",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_serena_get_status",
+                    description="Get Serena Bridge status and configuration",
+                    inputSchema={"type": "object", "properties": {}}
                 )
             ]
         
@@ -782,6 +1001,10 @@ class BMadMCPServer:
                 # Coder Agent Tools Handler
                 elif name.startswith("bmad_coder_"):
                     return await self._handle_coder_tool(name, arguments)
+                
+                # Serena Bridge Tools Handler (Professional Integration)
+                elif name.startswith("bmad_serena_"):
+                    return await self._handle_serena_tool(name, arguments)
                 
                 else:
                     return [TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -1032,6 +1255,97 @@ class BMadMCPServer:
                 
         except Exception as e:
             logger.error(f"Fehler beim Ausführen von Coder-Tool {name}: {str(e)}")
+            return [TextContent(type="text", text=f"❌ Fehler beim Ausführen von {name}: {str(e)}")]
+    
+    async def _handle_serena_tool(self, name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+        """Handle Serena Bridge tool calls - Professional Integration"""
+        try:
+            if name == "bmad_serena_initialize":
+                result = await self.serena_agent.initialize()
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_activate_project":
+                project_path = arguments["project_path"]
+                project_name = arguments.get("project_name")
+                result = await self.serena_agent.activate_project(project_path, project_name)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_find_symbol":
+                symbol_name = arguments["symbol_name"]
+                symbol_type = arguments.get("symbol_type")
+                local_only = arguments.get("local_only", False)
+                result = await self.serena_agent.find_symbol(symbol_name, symbol_type, local_only)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_get_symbols_overview":
+                file_path = arguments["file_path"]
+                result = await self.serena_agent.get_symbols_overview(file_path)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_find_referencing_symbols":
+                symbol_location = arguments["symbol_location"]
+                symbol_type = arguments.get("symbol_type")
+                result = await self.serena_agent.find_referencing_symbols(symbol_location, symbol_type)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_insert_after_symbol":
+                symbol_location = arguments["symbol_location"]
+                content = arguments["content"]
+                result = await self.serena_agent.insert_after_symbol(symbol_location, content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_replace_symbol_body":
+                symbol_location = arguments["symbol_location"]
+                new_content = arguments["new_content"]
+                result = await self.serena_agent.replace_symbol_body(symbol_location, new_content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_onboarding":
+                project_path = arguments.get("project_path")
+                result = await self.serena_agent.onboarding(project_path)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_get_project_summary":
+                result = await self.serena_agent.get_project_summary()
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_execute_shell_command":
+                command = arguments["command"]
+                working_dir = arguments.get("working_dir")
+                result = await self.serena_agent.execute_shell_command(command, working_dir)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_search_for_pattern":
+                pattern = arguments["pattern"]
+                file_types = arguments.get("file_types")
+                case_sensitive = arguments.get("case_sensitive", False)
+                result = await self.serena_agent.search_for_pattern(pattern, file_types, case_sensitive)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_write_memory":
+                memory_name = arguments["memory_name"]
+                content = arguments["content"]
+                result = await self.serena_agent.write_memory(memory_name, content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_read_memory":
+                memory_name = arguments["memory_name"]
+                result = await self.serena_agent.read_memory(memory_name)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_list_memories":
+                result = await self.serena_agent.list_memories()
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_serena_get_status":
+                result = self.serena_agent.get_status()
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            else:
+                return [TextContent(type="text", text=f"❌ Unbekanntes Serena-Tool: {name}")]
+                
+        except Exception as e:
+            logger.error(f"Fehler beim Ausführen von Serena-Tool {name}: {str(e)}")
             return [TextContent(type="text", text=f"❌ Fehler beim Ausführen von {name}: {str(e)}")]
 
 
