@@ -5,6 +5,9 @@ BMAD Agent Manager - Orchestrates all BMAD agents
 from typing import Dict, Optional, List
 from .analyst import AnalystAgent
 from .architect import ArchitectAgent
+from .developer import DeveloperAgent
+from .pm import ProjectManagerAgent
+from .qa import QAAgent
 from .base_agent import BaseAgent
 
 
@@ -15,10 +18,9 @@ class AgentManager:
         self.agents: Dict[str, BaseAgent] = {
             "analyst": AnalystAgent(),
             "architect": ArchitectAgent(),
-            # TODO: Add remaining agents
-            # "dev": DeveloperAgent(),
-            # "pm": ProjectManagerAgent(), 
-            # "qa": QAAgent()
+            "dev": DeveloperAgent(),
+            "pm": ProjectManagerAgent(), 
+            "qa": QAAgent()
         }
         self.current_agent: Optional[str] = None
     

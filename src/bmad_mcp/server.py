@@ -241,6 +241,157 @@ class BMadMCPServer:
                     name="bmad_get_registry_info",
                     description="Get global registry information and status",
                     inputSchema={"type": "object", "properties": {}}
+                ),
+                # Task Management Tools
+                Tool(
+                    name="bmad_get_task_summary",
+                    description="Get comprehensive task summary with progress and stats",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_get_today_tasks",
+                    description="Get today's scheduled tasks",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_create_task",
+                    description="Create a new BMAD task with automatic scheduling",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "string",
+                                "description": "Unique task identifier"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Task name/title"
+                            },
+                            "allocated_hours": {
+                                "type": "number",
+                                "description": "Total hours allocated for this task"
+                            },
+                            "agent": {
+                                "type": "string",
+                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "description": "Agent responsible for this task (optional)"
+                            },
+                            "start_date": {
+                                "type": "string",
+                                "description": "Start date in YYYY-MM-DD format (optional, defaults to today)"
+                            }
+                        },
+                        "required": ["task_id", "name", "allocated_hours"]
+                    }
+                ),
+                Tool(
+                    name="bmad_update_task_progress",
+                    description="Update task progress by adding completed hours",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "string",
+                                "description": "Task identifier"
+                            },
+                            "hours_completed": {
+                                "type": "number",
+                                "description": "Hours of work completed to add to the task"
+                            }
+                        },
+                        "required": ["task_id", "hours_completed"]
+                    }
+                ),
+                Tool(
+                    name="bmad_set_task_status",
+                    description="Set task status (pending, in_progress, completed, blocked)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "string",
+                                "description": "Task identifier"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "in_progress", "completed", "blocked"],
+                                "description": "New task status"
+                            }
+                        },
+                        "required": ["task_id", "status"]
+                    }
+                ),
+                Tool(
+                    name="bmad_get_agent_tasks",
+                    description="Get all tasks assigned to a specific agent",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "agent": {
+                                "type": "string",
+                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "description": "Agent name"
+                            }
+                        },
+                        "required": ["agent"]
+                    }
+                ),
+                Tool(
+                    name="bmad_sync_notion_tasks",
+                    description="Sync all tasks to Notion databases",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_get_task_report",
+                    description="Get formatted task report (summary, today, or detailed)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "report_type": {
+                                "type": "string",
+                                "enum": ["summary", "today", "detailed"],
+                                "description": "Type of report to generate (default: detailed)"
+                            }
+                        }
+                    }
+                ),
+                Tool(
+                    name="bmad_suggest_next_tasks",
+                    description="Get task suggestions based on current context",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "agent": {
+                                "type": "string",
+                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "description": "Agent to get suggestions for (optional)"
+                            }
+                        }
+                    }
+                ),
+                Tool(
+                    name="bmad_delete_task",
+                    description="Delete a task from the system",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "string",
+                                "description": "Task identifier to delete"
+                            }
+                        },
+                        "required": ["task_id"]
+                    }
+                ),
+                Tool(
+                    name="bmad_start_task_monitoring",
+                    description="Start background task monitoring with progress checks and reminders",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_stop_task_monitoring",
+                    description="Stop background task monitoring",
+                    inputSchema={"type": "object", "properties": {}}
                 )
             ]
         
@@ -297,6 +448,56 @@ class BMadMCPServer:
                 
                 elif name == "bmad_get_registry_info":
                     return await self._get_registry_info()
+                
+                # Task Management Tools
+                elif name == "bmad_get_task_summary":
+                    return await self.bmad_tools.get_task_summary()
+                
+                elif name == "bmad_get_today_tasks":
+                    return await self.bmad_tools.get_today_tasks()
+                
+                elif name == "bmad_create_task":
+                    task_id = arguments["task_id"]
+                    name = arguments["name"]
+                    allocated_hours = arguments["allocated_hours"]
+                    agent = arguments.get("agent")
+                    start_date = arguments.get("start_date")
+                    return await self.bmad_tools.create_task(task_id, name, allocated_hours, agent, start_date)
+                
+                elif name == "bmad_update_task_progress":
+                    task_id = arguments["task_id"]
+                    hours_completed = arguments["hours_completed"]
+                    return await self.bmad_tools.update_task_progress(task_id, hours_completed)
+                
+                elif name == "bmad_set_task_status":
+                    task_id = arguments["task_id"]
+                    status = arguments["status"]
+                    return await self.bmad_tools.set_task_status(task_id, status)
+                
+                elif name == "bmad_get_agent_tasks":
+                    agent = arguments["agent"]
+                    return await self.bmad_tools.get_agent_tasks(agent)
+                
+                elif name == "bmad_sync_notion_tasks":
+                    return await self.bmad_tools.sync_notion_tasks()
+                
+                elif name == "bmad_get_task_report":
+                    report_type = arguments.get("report_type", "detailed")
+                    return await self.bmad_tools.get_task_report(report_type)
+                
+                elif name == "bmad_suggest_next_tasks":
+                    agent = arguments.get("agent")
+                    return await self.bmad_tools.suggest_next_tasks(agent)
+                
+                elif name == "bmad_delete_task":
+                    task_id = arguments["task_id"]
+                    return await self.bmad_tools.delete_task(task_id)
+                
+                elif name == "bmad_start_task_monitoring":
+                    return await self.bmad_tools.start_task_monitoring()
+                
+                elif name == "bmad_stop_task_monitoring":
+                    return await self.bmad_tools.stop_task_monitoring()
                 
                 else:
                     return [TextContent(type="text", text=f"Unknown tool: {name}")]

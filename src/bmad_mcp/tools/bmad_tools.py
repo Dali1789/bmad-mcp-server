@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 from mcp.types import TextContent
 
 from ..agents import AgentManager
-from ..core import BMadLoader, ProjectDetector  
+from ..core import BMadLoader, ProjectDetector, BMadTaskTracker, TodoWriteBridge, NotionTaskSync
 from ..routing import OpenRouterClient
 
 
@@ -29,6 +29,11 @@ class BMadTools:
         self.project_detector = project_detector
         self.openrouter_client = openrouter_client
         self.global_registry = global_registry
+        
+        # Initialize task management components
+        self.task_tracker = BMadTaskTracker(global_registry)
+        self.todowrite_bridge = TodoWriteBridge(self.task_tracker)
+        self.notion_sync = NotionTaskSync(self.task_tracker)
     
     async def activate_agent(self, agent: str) -> List[TextContent]:
         """Activate a BMAD agent"""
@@ -242,3 +247,218 @@ Analyze the BMAD project at: `{project_path}`
 
 Provide a comprehensive analysis of this BMAD project structure and suggest improvements or next steps.
 """
+    
+    # Task Management Tools
+    async def get_task_summary(self) -> List[TextContent]:
+        """Get comprehensive task summary"""
+        summary = self.task_tracker.get_task_summary()
+        formatted_report = self.todowrite_bridge.get_formatted_task_report("detailed")
+        
+        return [TextContent(type="text", text=formatted_report)]
+    
+    async def get_today_tasks(self) -> List[TextContent]:
+        """Get today's scheduled tasks"""
+        today_report = self.todowrite_bridge.get_formatted_task_report("today")
+        return [TextContent(type="text", text=today_report)]
+    
+    async def create_task(
+        self, 
+        task_id: str, 
+        name: str, 
+        allocated_hours: float, 
+        agent: Optional[str] = None,
+        start_date: Optional[str] = None
+    ) -> List[TextContent]:
+        """Create a new BMAD task"""
+        
+        task = self.task_tracker.create_task(
+            task_id=task_id,
+            name=name,
+            allocated_hours=allocated_hours,
+            agent=agent,
+            start_date=start_date
+        )
+        
+        # Sync to Notion if available
+        await self.notion_sync.sync_task_to_notion(task)
+        
+        result = f"""✅ **Task Created Successfully**
+
+**Task ID**: `{task.id}`
+**Name**: {task.name}
+**Allocated Hours**: {task.allocated_hours}h
+**Agent**: {task.agent or 'Unassigned'}
+**Start Date**: {task.start_date}
+**Status**: {task.status}
+
+📅 **Daily Allocation**:
+"""
+        
+        for date, hours in task.daily_allocation.items():
+            result += f"- {date}: {hours}h\n"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def update_task_progress(self, task_id: str, hours_completed: float) -> List[TextContent]:
+        """Update task progress"""
+        
+        task = self.task_tracker.update_task_progress(task_id, hours_completed)
+        
+        if not task:
+            return [TextContent(type="text", text=f"❌ Task not found: {task_id}")]
+        
+        # Sync to Notion
+        await self.notion_sync.sync_task_to_notion(task)
+        
+        # Auto-sync TodoWrite if applicable
+        if task.status == "completed":
+            self.todowrite_bridge.sync_from_claude_update(f"bmad_{task_id}", "completed")
+        
+        progress_percentage = task.get_progress_percentage()
+        
+        result = f"""📈 **Task Progress Updated**
+
+**Task**: {task.name}
+**Progress**: {task.completed_hours:.1f}/{task.allocated_hours:.1f}h ({progress_percentage}%)
+**Status**: {task.status}
+**Hours Added**: +{hours_completed:.1f}h
+
+"""
+        
+        if task.status == "completed":
+            result += "🎉 **Task Completed!** Follow-up tasks may have been generated.\n"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def set_task_status(self, task_id: str, status: str) -> List[TextContent]:
+        """Set task status"""
+        
+        valid_statuses = ["pending", "in_progress", "completed", "blocked"]
+        if status not in valid_statuses:
+            return [TextContent(type="text", text=f"❌ Invalid status. Use: {', '.join(valid_statuses)}")]
+        
+        task = self.task_tracker.set_task_status(task_id, status)
+        
+        if not task:
+            return [TextContent(type="text", text=f"❌ Task not found: {task_id}")]
+        
+        # Sync to Notion
+        await self.notion_sync.sync_task_to_notion(task)
+        
+        result = f"""✅ **Task Status Updated**
+
+**Task**: {task.name}
+**New Status**: {status}
+**Progress**: {task.completed_hours:.1f}/{task.allocated_hours:.1f}h ({task.get_progress_percentage()}%)
+"""
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_agent_tasks(self, agent: str) -> List[TextContent]:
+        """Get all tasks for a specific agent"""
+        
+        agent_tasks = self.task_tracker.get_tasks_by_agent(agent)
+        
+        if not agent_tasks:
+            return [TextContent(type="text", text=f"📋 **No tasks found for agent: {agent}**")]
+        
+        result = f"🤖 **Tasks for Agent: {agent.upper()}**\n\n"
+        
+        for i, task in enumerate(agent_tasks, 1):
+            status_emoji = {"pending": "⏳", "in_progress": "🔄", "completed": "✅", "blocked": "🚫"}.get(task.status, "❓")
+            progress = task.get_progress_percentage()
+            
+            result += f"{i}. {status_emoji} **{task.name}**\n"
+            result += f"   - Progress: {task.completed_hours:.1f}/{task.allocated_hours:.1f}h ({progress}%)\n"
+            result += f"   - Status: {task.status}\n"
+            result += f"   - Start: {task.start_date}\n\n"
+        
+        total_hours = sum(t.allocated_hours for t in agent_tasks)
+        completed_hours = sum(t.completed_hours for t in agent_tasks)
+        overall_progress = int((completed_hours / total_hours * 100)) if total_hours > 0 else 0
+        
+        result += f"📊 **Summary**: {completed_hours:.1f}/{total_hours:.1f}h ({overall_progress}%)"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def sync_notion_tasks(self) -> List[TextContent]:
+        """Sync all tasks to Notion"""
+        
+        sync_result = await self.notion_sync.sync_all_tasks_to_notion()
+        
+        result = f"""🔄 **Notion Sync Completed**
+
+✅ **Synced**: {sync_result['synced_tasks']} tasks
+❌ **Failed**: {sync_result['failed_tasks']} tasks
+📊 **Total**: {sync_result['total_tasks']} tasks
+
+"""
+        
+        if sync_result.get('error'):
+            result += f"⚠️ **Error**: {sync_result['error']}\n"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_task_report(self, report_type: str = "detailed") -> List[TextContent]:
+        """Get formatted task report"""
+        
+        valid_types = ["summary", "today", "detailed"]
+        if report_type not in valid_types:
+            report_type = "detailed"
+        
+        formatted_report = self.todowrite_bridge.get_formatted_task_report(report_type)
+        return [TextContent(type="text", text=formatted_report)]
+    
+    async def suggest_next_tasks(self, agent: Optional[str] = None) -> List[TextContent]:
+        """Get task suggestions"""
+        
+        suggestions = self.todowrite_bridge.suggest_next_tasks(agent)
+        
+        if not suggestions:
+            return [TextContent(type="text", text="📋 **No task suggestions available**")]
+        
+        result = f"💡 **Task Suggestions**\n\n"
+        
+        for i, suggestion in enumerate(suggestions, 1):
+            result += f"{i}. {suggestion}\n"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def delete_task(self, task_id: str) -> List[TextContent]:
+        """Delete a task"""
+        
+        success = self.task_tracker.delete_task(task_id)
+        
+        if success:
+            result = f"✅ **Task deleted**: {task_id}"
+        else:
+            result = f"❌ **Task not found**: {task_id}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def start_task_monitoring(self) -> List[TextContent]:
+        """Start background task monitoring"""
+        
+        self.task_tracker.start_monitoring()
+        
+        result = """🔍 **Task Monitoring Started**
+
+Background monitoring is now active:
+- Progress checks every 30 minutes
+- Daily reports at 18:00
+- Automatic follow-up task generation
+- Phase completion tracking
+
+Use `bmad_stop_task_monitoring` to disable.
+"""
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def stop_task_monitoring(self) -> List[TextContent]:
+        """Stop background task monitoring"""
+        
+        self.task_tracker.stop_monitoring()
+        
+        result = "⏹️ **Task Monitoring Stopped**"
+        
+        return [TextContent(type="text", text=result)]
