@@ -13,10 +13,8 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
-from mcp.server.sse import SseServerTransport
-from fastapi import FastAPI, Request
-from starlette.responses import Response
-import uvicorn
+import mcp.server.stdio
+import mcp.types as types
 from mcp.types import (
     CallToolRequest,
     GetPromptRequest,
@@ -486,64 +484,23 @@ async def main():
     if not os.getenv("OPENROUTER_API_KEY"):
         logger.warning("OPENROUTER_API_KEY not set. Some features may not work.")
 
-    # Always run in web mode as stdio is unreliable
-    logger.info("Starting BMAD MCP Server in WEB (SSE) mode...")
+    # Run the server using stdio transport (standard for MCP)
+    logger.info("Starting BMAD MCP Server...")
     
-    app = FastAPI()
-    
-    # Initialize SSE transport with proper configuration
-    sse_transport = SseServerTransport("/messages")
-
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint"""
-        return {"status": "healthy", "service": "bmad-mcp-server", "version": "1.0.0"}
-
-    @app.get("/sse")
-    async def handle_sse(request: Request):
-        """SSE endpoint for MCP communication"""
-        logger.info("SSE connection established")
-        try:
-            async with sse_transport.connect_sse(
-                request.scope, request.receive, request._send
-            ) as streams:
-                await server_instance.server.run(
-                    streams[0],
-                    streams[1],
-                    InitializationOptions(
-                        server_name="bmad-mcp-server",
-                        server_version="1.0.0",
-                        capabilities={
-                            "tools": {},
-                            "resources": {},
-                            "prompts": {}
-                        }
-                    ),
-                )
-        except Exception as e:
-            logger.error(f"Error in SSE connection: {e}")
-            # Don't return a response here as SSE is a streaming protocol
-            raise
-
-    @app.post("/messages")
-    async def handle_messages(request: Request):
-        """Handle MCP messages"""
-        try:
-            # Handle the message without returning a response
-            # The SSE transport will handle the response through the SSE connection
-            await sse_transport.handle_post_message(
-                request.scope, request.receive, request._send
-            )
-        except Exception as e:
-            logger.error(f"Error handling message: {e}")
-            # Let FastAPI handle the error response properly
-            from fastapi import HTTPException
-            raise HTTPException(status_code=400, detail=str(e))
-
-    port = int(os.getenv("PORT", 3000))
-    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
-    server = uvicorn.Server(config)
-    await server.serve()
+    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
+        await server_instance.server.run(
+            read_stream,
+            write_stream,
+            InitializationOptions(
+                server_name="bmad-mcp-server",
+                server_version="1.0.0",
+                capabilities={
+                    "tools": {},
+                    "resources": {},
+                    "prompts": {}
+                }
+            ),
+        )
 
 if __name__ == "__main__":
     asyncio.run(main())
