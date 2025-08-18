@@ -392,6 +392,72 @@ class BMadMCPServer:
                     name="bmad_stop_task_monitoring",
                     description="Stop background task monitoring",
                     inputSchema={"type": "object", "properties": {}}
+                ),
+                # Project Template Management Tools
+                Tool(
+                    name="bmad_create_project",
+                    description="Create new BMAD project with standardized structure",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_path": {
+                                "type": "string",
+                                "description": "Path where to create the project"
+                            },
+                            "template": {
+                                "type": "string",
+                                "description": "Template to use (standard, web-app, api, mobile, data-science, infrastructure)",
+                                "default": "standard"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Custom project name (defaults to directory name)"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Project description"
+                            }
+                        },
+                        "required": ["project_path"]
+                    }
+                ),
+                Tool(
+                    name="bmad_list_project_templates",
+                    description="List all available project templates",
+                    inputSchema={"type": "object", "properties": {}}
+                ),
+                Tool(
+                    name="bmad_get_project_template_info",
+                    description="Get detailed information about a specific template",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "template_name": {
+                                "type": "string",
+                                "description": "Name of the template to get info for"
+                            }
+                        },
+                        "required": ["template_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_migrate_project_to_standard",
+                    description="Migrate existing project to BMAD standard structure",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_path": {
+                                "type": "string",
+                                "description": "Path to existing project"
+                            },
+                            "backup": {
+                                "type": "boolean",
+                                "description": "Create backup before migration",
+                                "default": True
+                            }
+                        },
+                        "required": ["project_path"]
+                    }
                 )
             ]
         
@@ -498,6 +564,27 @@ class BMadMCPServer:
                 
                 elif name == "bmad_stop_task_monitoring":
                     return await self.bmad_tools.stop_task_monitoring()
+                
+                # Project Template Management Tools
+                elif name == "bmad_create_project":
+                    return await self.bmad_tools.create_project(
+                        arguments["project_path"],
+                        arguments.get("template", "standard"),
+                        arguments.get("name"),
+                        arguments.get("description")
+                    )
+                
+                elif name == "bmad_list_project_templates":
+                    return await self.bmad_tools.list_project_templates()
+                
+                elif name == "bmad_get_project_template_info":
+                    return await self.bmad_tools.get_project_template_info(arguments["template_name"])
+                
+                elif name == "bmad_migrate_project_to_standard":
+                    return await self.bmad_tools.migrate_project_to_standard(
+                        arguments["project_path"],
+                        arguments.get("backup", True)
+                    )
                 
                 else:
                     return [TextContent(type="text", text=f"Unknown tool: {name}")]

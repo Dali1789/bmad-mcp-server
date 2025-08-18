@@ -1,0 +1,7 @@
+bmad_version: 2.0.0
+description: 'Migriertes BMAD-Projekt: BMAD MCP Server'
+migrated_at: '2025-08-18T12:38:40.140837'
+name: BMAD MCP Server
+template: standard
+type: standard
+version: 2.0.0

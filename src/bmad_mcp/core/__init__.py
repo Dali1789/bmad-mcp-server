@@ -12,6 +12,7 @@ from .console_formatter import BMadConsoleFormatter
 from .time_monitor import BMadTimeMonitor
 from .simulator import BMadWorkDaySimulator
 from .realtime_updater import BMadRealtimeUpdater
+from .project_templates import BMadProjectTemplates, template_manager
 
 __all__ = [
     'BMadLoader',
@@ -25,5 +26,7 @@ __all__ = [
     'BMadConsoleFormatter',
     'BMadTimeMonitor',
     'BMadWorkDaySimulator',
-    'BMadRealtimeUpdater'
+    'BMadRealtimeUpdater',
+    'BMadProjectTemplates',
+    'template_manager'
 ]

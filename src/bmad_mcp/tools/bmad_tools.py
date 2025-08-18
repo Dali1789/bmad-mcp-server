@@ -4,7 +4,9 @@ BMAD Tools Implementation - Core MCP tools for BMAD methodology
 
 import os
 import json
+import shutil
 from pathlib import Path
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from mcp.types import TextContent
 
@@ -14,6 +16,7 @@ from ..core import (
     NotionTaskSync, BMadConsoleFormatter, BMadTimeMonitor, 
     BMadWorkDaySimulator, BMadRealtimeUpdater
 )
+from ..core.project_templates import template_manager
 from ..routing import OpenRouterClient
 
 
@@ -545,6 +548,187 @@ Use `bmad_stop_task_monitoring` to disable.
         """Manually trigger progress check"""
         result = self.time_monitor.manual_progress_check()
         return [TextContent(type="text", text=result)]
+    
+    # Project Template Management Tools
+    
+    async def create_project(self, project_path: str, template: str = "standard", 
+                           name: Optional[str] = None, description: Optional[str] = None) -> List[TextContent]:
+        """
+        Create new BMAD project with standardized structure
+        
+        Args:
+            project_path: Path where to create the project
+            template: Template to use (standard, web-app, api, mobile, data-science, infrastructure)
+            name: Custom project name (defaults to directory name)
+            description: Project description
+        """
+        try:
+            project_config = {}
+            if name:
+                project_config["name"] = name
+            if description:
+                project_config["description"] = description
+            
+            result = template_manager.create_project(project_path, template, project_config)
+            
+            # Format success message
+            success_msg = f"""
+🎯 BMAD-Projekt erfolgreich erstellt!
+
+📁 Projekt: {result['project_path']}
+🎨 Template: {result['template']}
+📅 Erstellt: {result['created_at']}
+
+📋 Nächste Schritte:
+1. cd {Path(project_path).name}
+2. Konfiguration anpassen: .bmad-core/project.yaml
+3. Erste Task erstellen: bmad_create_task
+4. Agent aktivieren: bmad_activate_agent
+
+🏗️ Struktur:
+{self._format_project_structure(result['structure'])}
+
+✅ Projekt ist bereit für BMAD-Workflows!
+"""
+            return [TextContent(type="text", text=success_msg)]
+            
+        except Exception as e:
+            error_msg = f"❌ Fehler beim Erstellen des Projekts: {str(e)}"
+            return [TextContent(type="text", text=error_msg)]
+    
+    async def list_project_templates(self) -> List[TextContent]:
+        """List all available project templates"""
+        try:
+            templates = template_manager.list_templates()
+            
+            if not templates:
+                return [TextContent(type="text", text="Keine Templates verfügbar.")]
+            
+            result = "🎨 Verfügbare BMAD-Projekt-Templates:\n\n"
+            
+            for template in templates:
+                result += f"📋 **{template['name']}**\n"
+                result += f"   Typ: {template['type']}\n"
+                result += f"   Beschreibung: {template['description']}\n"
+                result += f"   Features:\n"
+                for feature in template.get('features', []):
+                    result += f"     • {feature}\n"
+                result += "\n"
+            
+            result += "💡 Verwendung: bmad_create_project('/pfad/zum/projekt', 'template-name')"
+            
+            return [TextContent(type="text", text=result)]
+            
+        except Exception as e:
+            error_msg = f"❌ Fehler beim Laden der Templates: {str(e)}"
+            return [TextContent(type="text", text=error_msg)]
+    
+    async def get_project_template_info(self, template_name: str) -> List[TextContent]:
+        """Get detailed information about a specific template"""
+        try:
+            template_config = template_manager._load_template(template_name)
+            
+            if not template_config:
+                return [TextContent(type="text", text=f"❌ Template '{template_name}' nicht gefunden.")]
+            
+            result = f"""
+🎨 Template: {template_config['name']}
+
+📋 Details:
+• Typ: {template_config.get('type', 'standard')}
+• Beschreibung: {template_config.get('description', 'Keine Beschreibung')}
+
+✨ Features:
+{chr(10).join(f'• {feature}' for feature in template_config.get('features', []))}
+
+🏗️ Verzeichnisstruktur:
+{self._format_project_structure(template_config.get('structure', {}))}
+
+💡 Erstellen mit:
+bmad_create_project('/pfad/zum/projekt', '{template_name}')
+"""
+            
+            return [TextContent(type="text", text=result)]
+            
+        except Exception as e:
+            error_msg = f"❌ Fehler beim Laden der Template-Info: {str(e)}"
+            return [TextContent(type="text", text=error_msg)]
+    
+    async def migrate_project_to_standard(self, project_path: str, backup: bool = True) -> List[TextContent]:
+        """
+        Migrate existing project to BMAD standard structure
+        
+        Args:
+            project_path: Path to existing project
+            backup: Create backup before migration
+        """
+        try:
+            project_path = Path(project_path)
+            
+            if not project_path.exists():
+                return [TextContent(type="text", text=f"❌ Projekt-Pfad existiert nicht: {project_path}")]
+            
+            # Check if already BMAD project
+            bmad_core = project_path / ".bmad-core"
+            if bmad_core.exists():
+                return [TextContent(type="text", text=f"✅ Projekt verwendet bereits BMAD-Standard-Struktur: {project_path}")]
+            
+            # Create backup if requested
+            if backup:
+                backup_path = project_path.parent / f"{project_path.name}_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                shutil.copytree(project_path, backup_path)
+                backup_msg = f"💾 Backup erstellt: {backup_path}\n"
+            else:
+                backup_msg = ""
+            
+            # Create .bmad-core structure
+            template_config = template_manager._get_standard_template()
+            template_manager._create_directory_structure(project_path, {".bmad-core": template_config["structure"][".bmad-core"]})
+            template_manager._create_config_files(project_path, template_config, {"name": project_path.name})
+            
+            # Register project
+            template_manager._register_project(project_path, "standard", None)
+            
+            result = f"""
+🔄 Projekt erfolgreich migriert!
+
+{backup_msg}📁 Projekt: {project_path}
+🎨 Template: BMAD Standard
+⏰ Migriert: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+✅ Hinzugefügt:
+• .bmad-core/ - BMAD Konfiguration
+• Agent-Konfigurationen (dev, architect, analyst, pm, qa)
+• Workflow-Definitionen (CI/CD, Review, Deployment)
+• Quality Gates (Linting, Testing, Security)
+• Integration-Konfigurationen (Notion, Slack, Git)
+
+📋 Nächste Schritte:
+1. Konfiguration anpassen: .bmad-core/project.yaml
+2. Erste Task erstellen: bmad_create_task
+3. Agent aktivieren: bmad_activate_agent
+
+🎯 Projekt ist jetzt BMAD-kompatibel!
+"""
+            
+            return [TextContent(type="text", text=result)]
+            
+        except Exception as e:
+            error_msg = f"❌ Fehler bei der Migration: {str(e)}"
+            return [TextContent(type="text", text=error_msg)]
+    
+    def _format_project_structure(self, structure: Dict[str, Any], indent: int = 0) -> str:
+        """Format project structure for display"""
+        result = ""
+        prefix = "  " * indent
+        
+        for name, config in structure.items():
+            result += f"{prefix}├── {name}/\n"
+            
+            if isinstance(config, dict) and "children" in config:
+                result += self._format_project_structure(config["children"], indent + 1)
+        
+        return result
     
     async def manual_daily_report(self) -> List[TextContent]:
         """Manually generate daily report"""
