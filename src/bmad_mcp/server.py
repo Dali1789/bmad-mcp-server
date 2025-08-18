@@ -13,7 +13,10 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
-from mcp.server.stdio import stdio_server
+from mcp.server.sse import SseServerTransport
+from fastapi import FastAPI, Request
+from starlette.responses import Response
+import uvicorn
 from mcp.types import (
     CallToolRequest,
     GetPromptRequest,
@@ -483,22 +486,45 @@ async def main():
     if not os.getenv("OPENROUTER_API_KEY"):
         logger.warning("OPENROUTER_API_KEY not set. Some features may not work.")
 
-    # Run server
-    logger.info("Starting BMAD MCP Server...")
-    async with stdio_server() as (read_stream, write_stream):
-        await server_instance.server.run(
-            read_stream,
-            write_stream,
-            InitializationOptions(
-                server_name="bmad-mcp-server",
-                server_version="1.0.0",
-                capabilities={
-                    "tools": {},
-                    "resources": {},
-                    "prompts": {}
-                }
-            )
+    # Always run in web mode as stdio is unreliable
+    logger.info("Starting BMAD MCP Server in WEB (SSE) mode...")
+    
+    app = FastAPI()
+    sse_transport = SseServerTransport("/messages")
+
+    @app.get("/sse")
+    async def handle_sse(request: Request):
+        try:
+            async with sse_transport.connect_sse(
+                request.scope, request.receive, request._send
+            ) as streams:
+                await server_instance.server.run(
+                    streams[0],
+                    streams[1],
+                    InitializationOptions(
+                        server_name="bmad-mcp-server",
+                        server_version="1.0.0",
+                         capabilities={
+                            "tools": {},
+                            "resources": {},
+                            "prompts": {}
+                        }
+                    ),
+                )
+        except Exception as e:
+            logger.error(f"Error in SSE connection: {e}")
+            return Response("Error in SSE connection", status_code=500)
+
+    @app.post("/messages")
+    async def handle_messages(request: Request):
+        await sse_transport.handle_post_message(
+            request.scope, request.receive, request._send
         )
+
+    port = int(os.getenv("PORT", 3000))
+    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
+    server = uvicorn.Server(config)
+    await server.serve()
 
 if __name__ == "__main__":
     asyncio.run(main())
