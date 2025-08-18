@@ -8,12 +8,13 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 
 ## ✨ Features
 
-### 🤖 **5 Specialized AI Agents**
+### 🤖 **6 Specialized AI Agents**
 - **📊 Analyst**: Business analysis, market research, requirement gathering
 - **🏗️ Architect**: System design, architecture planning, tech stack selection  
 - **💻 Developer**: Code implementation, debugging, technical development
 - **📋 Project Manager**: Task coordination, timeline management, resource planning
 - **🔍 QA**: Quality assurance, testing strategies, code review
+- **🔍 Serena Bridge**: Semantic code intelligence via LSP integration ⭐ NEW!
 
 ### 📋 **Advanced Task Management**
 - **Real-time Progress Tracking**: Live updates and notifications
@@ -30,6 +31,9 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 - **Zero-Setup**: Neue Projekte sind sofort produktiv mit kompletter Konfiguration
 
 ### 🔄 **Enhanced Features**
+- **BMAD-METHOD Workflow System**: Complete implementation with intelligent orchestration ⭐ NEW!
+- **Quality Gates (@qa commands)**: 6 comprehensive quality assurance commands ⭐ NEW!
+- **Semantic Code Intelligence**: LSP-based code analysis via Serena Bridge ⭐ NEW!
 - **Time-based Monitoring**: Scheduled reminders and progress checks
 - **Work Day Simulation**: Demo modes and realistic progression testing
 - **Live Console Output**: Beautiful formatted status displays
@@ -139,6 +143,31 @@ Add to your IDE's MCP configuration:
 | `bmad_execute_task` | Run BMAD methodology tasks | Template-based execution |
 | `bmad_create_document` | Generate documents from templates | Automated documentation |
 | `bmad_run_checklist` | Quality assurance checklists | QA workflows |
+
+### 🚀 **BMAD-METHOD Workflow System** ⭐ NEW!
+| Tool | Description | Example |
+|------|-------------|---------|
+| `bmad_workflow_start_project` | Start BMAD-METHOD project workflow | Full/planning/development modes |
+| `bmad_workflow_advance` | Advance workflow to next state | Project/story state transitions |
+| `bmad_workflow_start_story` | Create story in development cycle | Story creation & planning |
+| `bmad_workflow_run_qa` | Execute quality gate (@qa commands) | *risk, *design, *trace, *nfr, *review, *gate |
+| `bmad_workflow_execute_command` | Route agent commands intelligently | Context-aware agent routing |
+| `bmad_workflow_get_status` | Get comprehensive workflow status | Real-time progress monitoring |
+| `bmad_workflow_generate_report` | Generate detailed workflow reports | Analytics & recommendations |
+
+### 🔍 **Serena Bridge Agent** ⭐ NEW!
+| Tool | Description | Example |
+|------|-------------|---------|
+| `bmad_serena_initialize` | Initialize Serena MCP server | LSP server startup |
+| `bmad_serena_activate_project` | Activate project for analysis | Semantic code intelligence |
+| `bmad_serena_find_symbol` | Find code symbols semantically | Functions, classes, variables |
+| `bmad_serena_get_symbols_overview` | Get file symbol overview | Code structure analysis |
+| `bmad_serena_find_referencing_symbols` | Find symbol references | Cross-reference tracking |
+| `bmad_serena_insert_after_symbol` | Insert code after symbol | Precise code insertion |
+| `bmad_serena_replace_symbol_body` | Replace symbol implementation | Code modification |
+| `bmad_serena_onboarding` | Automated project analysis | Comprehensive codebase review |
+| `bmad_serena_search_for_pattern` | Advanced pattern search | Intelligent code search |
+| `bmad_serena_write_memory` | Store project knowledge | Persistent insights |
 
 ### 🎨 **Template-System** ⭐ NEW!
 | Tool | Description | Example |
@@ -273,7 +302,13 @@ bmad-mcp-server/
 │       │   ├── architect.py         # System design
 │       │   ├── developer.py         # Code implementation
 │       │   ├── project_manager.py   # Project coordination
-│       │   └── qa.py               # Quality assurance
+│       │   ├── qa.py               # Quality assurance
+│       │   └── serena_bridge.py    # Semantic code intelligence
+│       ├── workflows/              # BMAD-METHOD workflow system
+│       │   ├── workflow_engine.py  # Central workflow orchestration
+│       │   ├── orchestrator_agent.py # Project/Story lifecycle management
+│       │   ├── quality_gates.py    # Quality assurance (@qa commands)
+│       │   └── workflow_states.py  # State machine definitions
 │       ├── tools/                   # MCP tool implementations
 │       ├── routing/                 # OpenRouter integration
 │       └── server.py               # MCP server
@@ -340,9 +375,12 @@ python -m pytest --cov=src/bmad_mcp tests/
 
 ## 📚 **Documentation**
 
+- **[BMAD Workflow System](BMAD_WORKFLOW_SYSTEM.md)** - Complete workflow implementation guide ⭐ NEW!
 - **[API Reference](docs/api-reference.md)** - Complete tool documentation
 - **[Agent Guide](docs/agent-guide.md)** - Working with specialized agents  
 - **[Task Management](docs/task-management.md)** - Advanced task workflows
+- **[Quality Gates Guide](docs/quality-gates.md)** - @qa commands and quality assurance ⭐ NEW!
+- **[Serena Integration](SERENA_INTEGRATION.md)** - LSP-based code intelligence ⭐ NEW!
 - **[Project Setup](docs/project-setup.md)** - BMAD project configuration
 - **[Integration Guide](docs/integration-guide.md)** - IDE setup instructions
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
@@ -359,24 +397,30 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📈 **Roadmap**
 
-### ✅ **Recently Completed (v2.0)**
+### ✅ **Recently Completed (v2.1)**
+- [x] **BMAD-METHOD Workflow System**: Complete workflow implementation with intelligent orchestration
+- [x] **Quality Gates System**: All 6 @qa commands (*risk, *design, *trace, *nfr, *review, *gate)
+- [x] **Serena Bridge Agent**: LSP-based semantic code intelligence integration
+- [x] **Agent Coordination**: 6-agent ecosystem with smart routing and collaboration
 - [x] **Template-System**: 6 standardized project templates
 - [x] **Auto-Discovery**: Automatic project detection and integration
 - [x] **Migration Tools**: Legacy project migration to BMAD v2.0
 - [x] **Standardized Structure**: Unified `.bmad-core/` project layout
 
-### 🔄 **In Progress**
-- [ ] **Enhanced Templates**: Custom template creation and sharing
-- [ ] **Team Templates**: Multi-developer project templates
-- [ ] **Template Marketplace**: Community template repository
+### 🔄 **In Progress (v2.2)**
+- [ ] **Workflow Automation**: Advanced automation rules and triggers
+- [ ] **Multi-Project Workflows**: Cross-project dependency management
+- [ ] **Enhanced Analytics**: Workflow performance insights and optimization
+- [ ] **Custom Quality Gates**: User-definable quality criteria and checks
 
-### 🚀 **Planned Features**
-- [ ] **Web Dashboard**: Browser-based task management interface
-- [ ] **Team Collaboration**: Multi-user project support  
-- [ ] **Advanced Analytics**: Performance insights and reporting
-- [ ] **Plugin System**: Custom agent and tool development
-- [ ] **Mobile App**: Companion mobile application
-- [ ] **Enterprise Features**: SSO, audit logs, advanced security
+### 🚀 **Planned Features (v3.0)**
+- [ ] **Web Dashboard**: Browser-based workflow management interface
+- [ ] **Team Collaboration**: Multi-user project support with role-based access
+- [ ] **Enterprise Workflows**: Advanced enterprise features and compliance
+- [ ] **Serena Enhancements**: Multi-language LSP support and AI-assisted refactoring
+- [ ] **Plugin System**: Custom agent and quality gate development
+- [ ] **Mobile App**: Companion mobile application for workflow monitoring
+- [ ] **Template Marketplace**: Community-driven template sharing platform
 
 ## 🔐 **Security**
 

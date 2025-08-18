@@ -38,6 +38,7 @@ from .core import BMadLoader, ProjectDetector
 from .core.global_registry import global_registry
 from .routing import OpenRouterClient
 from .tools import BMadTools
+from .workflows.workflow_engine import BMadWorkflowEngine
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +67,16 @@ class BMadMCPServer:
         self.coder_agent = BMadCoderAgent()  # Fallback Basic Agent
         self.serena_agent = BMadSerenaAgent()  # Primary Serena Bridge Agent
         
+        # Workflow Engine
+        self.workflow_engine = BMadWorkflowEngine(
+            global_registry=self.global_registry,
+            persistence_path="./workflows"
+        )
+        
+        # Register agents with workflow engine
+        self.workflow_engine.register_agent("serena", self.serena_agent)
+        self.workflow_engine.register_agent("coder", self.coder_agent)
+        
         # Current context
         self.current_agent = None
         self.current_project_path = None
@@ -90,7 +101,7 @@ class BMadMCPServer:
                         "properties": {
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent to activate"
                             }
                         },
@@ -110,7 +121,7 @@ class BMadMCPServer:
                         "properties": {
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent to get help for (optional, uses current agent if not specified)"
                             }
                         }
@@ -195,7 +206,7 @@ class BMadMCPServer:
                             },
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent/model to use for query (optional, uses current agent)"
                             },
                             "context": {
@@ -279,7 +290,7 @@ class BMadMCPServer:
                             },
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent responsible for this task (optional)"
                             },
                             "start_date": {
@@ -335,7 +346,7 @@ class BMadMCPServer:
                         "properties": {
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent name"
                             }
                         },
@@ -369,7 +380,7 @@ class BMadMCPServer:
                         "properties": {
                             "agent": {
                                 "type": "string",
-                                "enum": ["analyst", "architect", "dev", "pm", "qa"],
+                                "enum": ["analyst", "architect", "dev", "pm", "qa", "serena"],
                                 "description": "Agent to get suggestions for (optional)"
                             }
                         }
@@ -870,6 +881,156 @@ class BMadMCPServer:
                     name="bmad_serena_get_status",
                     description="Get Serena Bridge status and configuration",
                     inputSchema={"type": "object", "properties": {}}
+                ),
+                
+                # Workflow Engine Tools
+                Tool(
+                    name="bmad_workflow_start_project",
+                    description="Start a new BMAD-METHOD project workflow",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_name": {
+                                "type": "string",
+                                "description": "Name of the project"
+                            },
+                            "initial_idea": {
+                                "type": "string",
+                                "description": "Optional initial project idea"
+                            },
+                            "workflow_type": {
+                                "type": "string",
+                                "enum": ["full", "planning_only", "development_only"],
+                                "description": "Type of workflow to start"
+                            }
+                        },
+                        "required": ["project_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_advance",
+                    description="Advance workflow to next state or specific target",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Workflow identifier"
+                            },
+                            "target_state": {
+                                "type": "string",
+                                "description": "Optional specific target state"
+                            },
+                            "agent_override": {
+                                "type": "string",
+                                "description": "Optional agent to handle advancement"
+                            }
+                        },
+                        "required": ["workflow_id"]
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_execute_agent_command",
+                    description="Execute agent command within workflow context",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Workflow identifier"
+                            },
+                            "agent_type": {
+                                "type": "string",
+                                "enum": ["analyst", "architect", "pm", "dev", "qa"],
+                                "description": "Type of agent"
+                            },
+                            "command": {
+                                "type": "string",
+                                "description": "Agent command (e.g., *risk, *design, *review)"
+                            },
+                            "parameters": {
+                                "type": "object",
+                                "description": "Command parameters"
+                            }
+                        },
+                        "required": ["workflow_id", "agent_type", "command"]
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_start_story",
+                    description="Start story development cycle within workflow",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Parent workflow identifier"
+                            },
+                            "story_title": {
+                                "type": "string",
+                                "description": "Story title"
+                            },
+                            "story_description": {
+                                "type": "string",
+                                "description": "Story description"
+                            },
+                            "epic_id": {
+                                "type": "string",
+                                "description": "Optional parent epic ID"
+                            }
+                        },
+                        "required": ["workflow_id", "story_title"]
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_run_quality_gate",
+                    description="Run quality gate check for story (@qa commands)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Workflow identifier"
+                            },
+                            "story_id": {
+                                "type": "string",
+                                "description": "Story identifier"
+                            },
+                            "gate_type": {
+                                "type": "string",
+                                "enum": ["risk", "design", "trace", "nfr", "review", "gate", "comprehensive"],
+                                "description": "Type of quality gate"
+                            }
+                        },
+                        "required": ["workflow_id", "story_id"]
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_status",
+                    description="Get comprehensive workflow status",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Optional specific workflow ID"
+                            }
+                        }
+                    }
+                ),
+                Tool(
+                    name="bmad_workflow_generate_report",
+                    description="Generate comprehensive workflow report",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "workflow_id": {
+                                "type": "string",
+                                "description": "Workflow identifier"
+                            }
+                        },
+                        "required": ["workflow_id"]
+                    }
                 )
             ]
         
@@ -1005,6 +1166,10 @@ class BMadMCPServer:
                 # Serena Bridge Tools Handler (Professional Integration)
                 elif name.startswith("bmad_serena_"):
                     return await self._handle_serena_tool(name, arguments)
+                
+                # Workflow Engine Tools Handler
+                elif name.startswith("bmad_workflow_"):
+                    return await self._handle_workflow_tool(name, arguments)
                 
                 else:
                     return [TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -1347,11 +1512,78 @@ class BMadMCPServer:
         except Exception as e:
             logger.error(f"Fehler beim Ausführen von Serena-Tool {name}: {str(e)}")
             return [TextContent(type="text", text=f"❌ Fehler beim Ausführen von {name}: {str(e)}")]
+    
+    async def _handle_workflow_tool(self, name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+        """Handle Workflow Engine tool calls - BMAD-METHOD Implementation"""
+        try:
+            if name == "bmad_workflow_start_project":
+                result = await self.workflow_engine.start_project_workflow(
+                    project_name=arguments.get("project_name"),
+                    initial_idea=arguments.get("initial_idea"),
+                    workflow_type=arguments.get("workflow_type", "full")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_advance":
+                result = await self.workflow_engine.advance_workflow(
+                    workflow_id=arguments.get("workflow_id"),
+                    target_state=arguments.get("target_state"),
+                    agent_override=arguments.get("agent_override")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_execute_agent_command":
+                result = await self.workflow_engine.execute_agent_command(
+                    workflow_id=arguments.get("workflow_id"),
+                    agent_type=arguments.get("agent_type"),
+                    command=arguments.get("command"),
+                    parameters=arguments.get("parameters", {})
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_start_story":
+                result = await self.workflow_engine.start_story_cycle(
+                    workflow_id=arguments.get("workflow_id"),
+                    story_title=arguments.get("story_title"),
+                    story_description=arguments.get("story_description"),
+                    epic_id=arguments.get("epic_id")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_run_quality_gate":
+                result = await self.workflow_engine.run_quality_gate(
+                    workflow_id=arguments.get("workflow_id"),
+                    story_id=arguments.get("story_id"),
+                    gate_type=arguments.get("gate_type", "comprehensive")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_status":
+                result = await self.workflow_engine.get_workflow_status(
+                    workflow_id=arguments.get("workflow_id")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_workflow_generate_report":
+                result = await self.workflow_engine.generate_workflow_report(
+                    workflow_id=arguments.get("workflow_id")
+                )
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            else:
+                return [TextContent(type="text", text=f"❌ Unbekanntes Workflow-Tool: {name}")]
+                
+        except Exception as e:
+            logger.error(f"Fehler beim Ausführen von Workflow-Tool {name}: {str(e)}")
+            return [TextContent(type="text", text=f"❌ Fehler beim Ausführen von {name}: {str(e)}")]
 
 
 async def main():
     """Main server entry point"""
     server_instance = BMadMCPServer()
+    
+    # Initialize workflow engine asynchronously
+    await server_instance.workflow_engine.initialize()
     
     # Configure OpenRouter API key
     if not os.getenv("OPENROUTER_API_KEY"):

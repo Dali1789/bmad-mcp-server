@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 import os
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +30,14 @@ class BMadSerenaAgent:
     
     def __init__(self):
         self.serena_process = None
+        self.mcp_session = None
+        self.mcp_context = None
+        self.read_stream = None
+        self.write_stream = None
         self.active_project = None
         self.serena_command = self._get_serena_command()
         self.is_initialized = False
+        self.available_tools = []
         
     def _get_serena_command(self) -> List[str]:
         """Bestimmt den Serena-Kommando basierend auf Installation"""
@@ -55,31 +62,45 @@ class BMadSerenaAgent:
             ]
     
     async def initialize(self) -> Dict[str, Any]:
-        """Initialisiert die Serena Bridge"""
+        """Initialisiert die Serena Bridge mit echter MCP-Verbindung"""
         try:
             if self.is_initialized:
                 return {"status": "already_initialized", "serena_available": True}
             
-            # Test Serena availability
+            # Test Serena availability first
             test_result = await self._test_serena_availability()
+            if not test_result["available"]:
+                return {
+                    "status": "error",
+                    "serena_available": False,
+                    "error": test_result.get("error"),
+                    "message": "Serena nicht verfügbar - Fallback auf Basic-Tools"
+                }
             
-            if test_result["available"]:
+            # Start MCP Server and connect
+            logger.info("Starte Serena MCP Integration...")
+            mcp_started = await self._start_serena_mcp_server()
+            
+            if mcp_started:
                 self.is_initialized = True
-                logger.info("Serena Bridge erfolgreich initialisiert")
+                logger.info("Serena Bridge mit echter MCP-Integration erfolgreich initialisiert")
                 
                 return {
                     "status": "success",
                     "serena_available": True,
+                    "mcp_session_active": True,
                     "serena_version": test_result.get("version"),
-                    "available_tools": await self._get_available_serena_tools(),
-                    "message": "🎯 Serena Bridge aktiv - Volle semantische Code-Analyse verfügbar!"
+                    "available_tools": self.available_tools,
+                    "available_tools_count": len(self.available_tools),
+                    "message": "Serena Bridge mit echter MCP-Integration aktiv - Volle semantische Code-Analyse verfügbar!"
                 }
             else:
                 return {
                     "status": "error",
                     "serena_available": False,
-                    "error": test_result.get("error"),
-                    "message": "❌ Serena nicht verfügbar - Fallback auf Basic-Tools"
+                    "mcp_session_active": False,
+                    "error": "MCP Server konnte nicht gestartet werden",
+                    "message": "Serena MCP-Integration fehlgeschlagen - Fallback auf Basic-Tools"
                 }
                 
         except Exception as e:
@@ -87,6 +108,7 @@ class BMadSerenaAgent:
             return {
                 "status": "error", 
                 "serena_available": False,
+                "mcp_session_active": False,
                 "error": str(e)
             }
     
@@ -332,7 +354,7 @@ class BMadSerenaAgent:
                 "success": True,
                 "project": self.active_project,
                 "analysis": results,
-                "message": "🎯 Vollständige Serena-Projekt-Analyse abgeschlossen"
+                "message": "Vollständige Serena-Projekt-Analyse abgeschlossen"
             }
             
         except Exception as e:
@@ -344,17 +366,23 @@ class BMadSerenaAgent:
     async def _test_serena_availability(self) -> Dict[str, Any]:
         """Testet ob Serena verfügbar ist"""
         try:
-            # Test Serena Command
-            cmd = self.serena_command[:-3] + ["--help"]  # Remove MCP server args, add --help
+            # Test Serena Command - use base serena command for help
+            cmd = ["C:\\Users\\Faber\\.local\\bin\\uvx.exe", "--from", "git+https://github.com/oraios/serena", "serena", "--help"]
             
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                timeout=10
+                stderr=asyncio.subprocess.PIPE
             )
             
-            stdout, stderr = await process.communicate()
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10.0)
+            except asyncio.TimeoutError:
+                process.kill()
+                return {
+                    "available": False,
+                    "error": "Serena command timeout"
+                }
             
             if process.returncode == 0:
                 return {
@@ -368,11 +396,6 @@ class BMadSerenaAgent:
                     "error": f"Serena command failed: {stderr.decode('utf-8', errors='ignore')}"
                 }
                 
-        except asyncio.TimeoutError:
-            return {
-                "available": False,
-                "error": "Serena command timeout"
-            }
         except Exception as e:
             return {
                 "available": False,
@@ -380,58 +403,153 @@ class BMadSerenaAgent:
             }
     
     async def _get_available_serena_tools(self) -> List[str]:
-        """Ruft verfügbare Serena Tools ab"""
+        """Ruft verfügbare Serena Tools ab - wird jetzt über echte MCP-Verbindung erledigt"""
         try:
-            # Standard Serena Tools die wir erwarten
-            return [
-                "activate_project",
-                "find_symbol", 
-                "get_symbols_overview",
-                "find_referencing_symbols",
-                "insert_after_symbol",
-                "replace_symbol_body", 
-                "execute_shell_command",
-                "search_for_pattern",
-                "write_memory",
-                "read_memory",
-                "list_memories",
-                "onboarding",
-                "create_text_file",
-                "read_file",
-                "list_dir"
-            ]
+            if self.mcp_session:
+                # Get tools from real MCP session
+                tools_result = await self.mcp_session.list_tools()
+                return [tool.name for tool in tools_result.tools]
+            else:
+                # Standard Serena Tools die wir erwarten (Fallback)
+                return [
+                    "activate_project",
+                    "find_symbol", 
+                    "get_symbols_overview",
+                    "find_referencing_symbols",
+                    "insert_after_symbol",
+                    "replace_symbol_body", 
+                    "execute_shell_command",
+                    "search_for_pattern",
+                    "write_memory",
+                    "read_memory",
+                    "list_memories",
+                    "onboarding",
+                    "create_text_file",
+                    "read_file",
+                    "list_dir"
+                ]
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der Serena Tools: {e}")
             return []
     
-    async def _call_serena_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _start_serena_mcp_server(self) -> bool:
         """
-        Ruft ein Serena Tool über MCP auf
-        
-        WICHTIG: Dies ist ein Placeholder für echte MCP-Kommunikation
-        In Production würde hier eine echte MCP-Client-Verbindung zu Serena stehen
+        Startet den Serena MCP Server und verbindet sich
         """
         try:
-            logger.info(f"Serena Tool-Call: {tool_name} mit {parameters}")
+            if self.mcp_session:
+                logger.info("Serena MCP Session bereits aktiv")
+                return True
             
-            # Simuliere erfolgreiche Serena-Antwort
-            # In echtem Setup: MCP Client → Serena MCP Server
-            simulated_response = {
-                "success": True,
-                "tool": tool_name,
-                "parameters": parameters,
-                "result": f"Serena {tool_name} würde hier echte Ergebnisse liefern",
-                "note": "⚠️ Placeholder - echte Serena MCP-Integration benötigt"
-            }
+            logger.info("Starte Serena MCP Server...")
             
-            return simulated_response
+            # Start Serena MCP Server process
+            server_params = StdioServerParameters(
+                command=self.serena_command[0],
+                args=self.serena_command[1:]
+            )
+            
+            # Create async context manager but store it for persistent use
+            self.mcp_context = stdio_client(server_params)
+            
+            # Enter the context and store read/write streams
+            self.read_stream, self.write_stream = await self.mcp_context.__aenter__()
+            
+            # Create persistent MCP session
+            self.mcp_session = ClientSession(self.read_stream, self.write_stream)
+            
+            # Initialize session
+            result = await self.mcp_session.initialize()
+            logger.info(f"Serena MCP Server initialisiert: {result.server_info.name} v{result.server_info.version}")
+            
+            # Get available tools
+            tools_result = await self.mcp_session.list_tools()
+            self.available_tools = [tool.name for tool in tools_result.tools]
+            logger.info(f"Verfügbare Serena Tools: {len(self.available_tools)}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Starten des Serena MCP Servers: {e}")
+            self.mcp_session = None
+            self.mcp_context = None
+            return False
+    
+    async def _call_serena_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ruft ein Serena Tool über echte MCP-Kommunikation auf
+        """
+        try:
+            # Ensure MCP session is active
+            if not self.mcp_session:
+                server_started = await self._start_serena_mcp_server()
+                if not server_started:
+                    return {
+                        "success": False,
+                        "error": "Serena MCP Server konnte nicht gestartet werden",
+                        "tool": tool_name
+                    }
+            
+            logger.info(f"Rufe Serena Tool auf: {tool_name} mit {parameters}")
+            
+            # Check if tool is available
+            if tool_name not in self.available_tools:
+                logger.warning(f"Tool {tool_name} nicht in verfügbaren Tools: {self.available_tools}")
+                # Try to refresh tools list
+                tools_result = await self.mcp_session.list_tools()
+                self.available_tools = [tool.name for tool in tools_result.tools]
+                
+                if tool_name not in self.available_tools:
+                    return {
+                        "success": False,
+                        "error": f"Tool '{tool_name}' nicht verfügbar in Serena",
+                        "available_tools": self.available_tools,
+                        "tool": tool_name
+                    }
+            
+            # Call the tool via MCP
+            result = await self.mcp_session.call_tool(tool_name, parameters)
+            
+            # Parse result
+            if hasattr(result, 'content') and result.content:
+                # Extract text content from MCP result
+                content_text = ""
+                for content_item in result.content:
+                    if hasattr(content_item, 'text'):
+                        content_text += content_item.text
+                    elif hasattr(content_item, 'data'):
+                        content_text += str(content_item.data)
+                
+                return {
+                    "success": True,
+                    "tool": tool_name,
+                    "parameters": parameters,
+                    "result": content_text,
+                    "mcp_response": str(result),
+                    "note": "Echte Serena MCP-Integration aktiv"
+                }
+            else:
+                return {
+                    "success": True,
+                    "tool": tool_name,
+                    "parameters": parameters,
+                    "result": str(result),
+                    "note": "Echte Serena MCP-Integration aktiv"
+                }
             
         except Exception as e:
             logger.error(f"Fehler bei Serena Tool-Call {tool_name}: {e}")
+            
+            # Try to restart session on error
+            if "Connection" in str(e) or "pipe" in str(e).lower():
+                logger.info("Versuche Serena MCP Session neu zu starten...")
+                self.mcp_session = None
+                
             return {
                 "success": False,
                 "error": str(e),
-                "tool": tool_name
+                "tool": tool_name,
+                "note": "MCP-Kommunikationsfehler"
             }
     
     async def _index_project(self, project_path: str):
@@ -455,9 +573,33 @@ class BMadSerenaAgent:
     async def cleanup(self):
         """Cleanup-Ressourcen"""
         try:
+            # Close MCP session
+            if self.mcp_session:
+                try:
+                    await self.mcp_session.close()
+                    logger.info("Serena MCP Session geschlossen")
+                except Exception as e:
+                    logger.warning(f"Fehler beim Schließen der MCP Session: {e}")
+                finally:
+                    self.mcp_session = None
+            
+            # Exit MCP context if exists
+            if self.mcp_context:
+                try:
+                    await self.mcp_context.__aexit__(None, None, None)
+                    logger.info("Serena MCP Context geschlossen")
+                except Exception as e:
+                    logger.warning(f"Fehler beim Schließen des MCP Context: {e}")
+                finally:
+                    self.mcp_context = None
+                    self.read_stream = None
+                    self.write_stream = None
+            
+            # Cleanup process
             if self.serena_process and self.serena_process.returncode is None:
                 self.serena_process.terminate()
                 await self.serena_process.wait()
+                logger.info("Serena Prozess beendet")
                 
             logger.info("Serena Bridge Cleanup abgeschlossen")
             
@@ -468,7 +610,10 @@ class BMadSerenaAgent:
         """Status der Serena Bridge"""
         return {
             "initialized": self.is_initialized,
+            "mcp_session_active": self.mcp_session is not None,
+            "available_tools_count": len(self.available_tools),
+            "available_tools": self.available_tools[:10],  # First 10 tools
             "active_project": self.active_project,
             "serena_command": " ".join(self.serena_command),
-            "bridge_version": "1.0.0"
+            "bridge_version": "1.1.0 - Real MCP Integration"
         }

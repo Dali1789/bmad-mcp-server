@@ -1,0 +1,367 @@
+{
+  "workflow_id": "workflow_bmad_20250818_192522",
+  "project_id": "bmad_20250818_192522",
+  "session_id": "bmad_20250818_192522_session_001",
+  "workflow_type": "full",
+  "execution_plan": {
+    "phases": [
+      {
+        "phase": "planning",
+        "states": [
+          "idea_generation",
+          "analyst_research",
+          "project_brief",
+          "prd_creation",
+          "architecture"
+        ]
+      },
+      {
+        "phase": "development",
+        "states": [
+          "development_ready",
+          "in_development"
+        ]
+      },
+      {
+        "phase": "quality",
+        "states": [
+          "qa_review",
+          "quality_gates"
+        ]
+      },
+      {
+        "phase": "completion",
+        "states": [
+          "completed"
+        ]
+      }
+    ],
+    "estimated_duration": "4-8 weeks",
+    "required_agents": [
+      "analyst",
+      "architect",
+      "pm",
+      "dev",
+      "qa"
+    ],
+    "quality_gates": [
+      "risk_assessment",
+      "design_review",
+      "comprehensive_review",
+      "final_gate"
+    ]
+  },
+  "started_at": "2025-08-18T19:25:22.417193",
+  "status": "active",
+  "last_advancement": "2025-08-18T19:25:22.425199",
+  "current_state": "validation",
+  "current_story_id": "bmad_20250818_192522_story_001",
+  "story_cycle_started": "2025-08-18T19:25:22.422879",
+  "quality_gates": [
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "risk",
+      "result": {
+        "success": true,
+        "risk_profile": {
+          "risk_level": "MEDIUM",
+          "risk_factors": [
+            "Unclear or insufficient acceptance criteria"
+          ],
+          "mitigation_strategies": [
+            "Refine acceptance criteria with stakeholders"
+          ],
+          "assessment_date": "2025-08-18T19:25:22.427725",
+          "assessed_by": "qa_agent",
+          "complexity_score": 1,
+          "dependency_score": 1,
+          "time_risk_score": 3
+        },
+        "next_actions": [
+          "Schedule architect review",
+          "Add additional testing",
+          "Create detailed task breakdown"
+        ],
+        "message": "Risk assessment completed: MEDIUM risk level identified"
+      },
+      "timestamp": "2025-08-18T19:25:22.427725"
+    },
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "design",
+      "result": {
+        "success": true,
+        "test_strategy": {
+          "story_id": "bmad_20250818_192522_story_001",
+          "created_at": "2025-08-18T19:25:22.428731",
+          "test_types": [],
+          "test_scenarios": [],
+          "automation_plan": {
+            "automation_percentage": 0,
+            "automation_tools": [
+              "pytest",
+              "selenium",
+              "postman"
+            ],
+            "ci_cd_integration": true,
+            "maintenance_strategy": "continuous"
+          },
+          "quality_criteria": [
+            "All acceptance criteria must have corresponding tests",
+            "Minimum 80% code coverage for new code",
+            "All critical paths must be covered by automated tests",
+            "Performance criteria must be validated",
+            "Security considerations must be tested"
+          ]
+        },
+        "implementation_plan": {
+          "phases": [
+            {
+              "phase": "unit_tests",
+              "timeline": "During development",
+              "responsibility": "developer"
+            },
+            {
+              "phase": "integration_tests",
+              "timeline": "After unit tests",
+              "responsibility": "developer"
+            },
+            {
+              "phase": "functional_tests",
+              "timeline": "After integration",
+              "responsibility": "qa"
+            },
+            {
+              "phase": "automation",
+              "timeline": "Parallel to manual testing",
+              "responsibility": "qa"
+            }
+          ],
+          "tools_setup": [
+            "pytest",
+            "coverage",
+            "selenium"
+          ],
+          "ci_cd_integration": "Add to deployment pipeline",
+          "success_criteria": "All tests passing, 80% coverage achieved"
+        },
+        "message": "Test strategy designed successfully"
+      },
+      "timestamp": "2025-08-18T19:25:22.428731"
+    },
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "trace",
+      "result": {
+        "success": true,
+        "tracing_report": {
+          "story_id": "bmad_20250818_192522_story_001",
+          "traced_at": "2025-08-18T19:25:22.429810",
+          "requirement_coverage": {},
+          "implementation_mapping": {},
+          "test_coverage": {},
+          "gaps_identified": [
+            "No acceptance criteria defined",
+            "No implementation tasks defined"
+          ]
+        },
+        "coverage_percentage": 0.0,
+        "message": "Requirements tracing completed - 2 gaps identified"
+      },
+      "timestamp": "2025-08-18T19:25:22.430313"
+    },
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "nfr",
+      "result": {
+        "success": true,
+        "nfr_report": {
+          "story_id": "bmad_20250818_192522_story_001",
+          "assessed_at": "2025-08-18T19:25:22.430816",
+          "overall_status": "passed",
+          "categories": {
+            "performance": {
+              "status": "assessed",
+              "criteria": [
+                "performance criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            },
+            "security": {
+              "status": "assessed",
+              "criteria": [
+                "security criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            },
+            "usability": {
+              "status": "assessed",
+              "criteria": [
+                "usability criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            },
+            "reliability": {
+              "status": "assessed",
+              "criteria": [
+                "reliability criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            },
+            "scalability": {
+              "status": "assessed",
+              "criteria": [
+                "scalability criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            },
+            "maintainability": {
+              "status": "assessed",
+              "criteria": [
+                "maintainability criteria defined"
+              ],
+              "issues": [],
+              "score": 8.0
+            }
+          },
+          "total_issues": 0,
+          "recommendations": []
+        },
+        "action_required": false,
+        "message": "NFR assessment completed - passed"
+      },
+      "timestamp": "2025-08-18T19:25:22.431319"
+    },
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "review",
+      "result": {
+        "success": true,
+        "review_report": {
+          "story_id": "bmad_20250818_192522_story_001",
+          "reviewed_at": "2025-08-18T19:25:22.432328",
+          "reviewer": "qa_agent",
+          "review_sections": {
+            "requirements": {
+              "score": 5.0,
+              "issues": [
+                "No acceptance criteria defined",
+                "Insufficient story description"
+              ],
+              "recommendations": [
+                "Define clear acceptance criteria",
+                "Expand story description"
+              ]
+            },
+            "implementation": {
+              "score": 8.0,
+              "issues": [],
+              "recommendations": []
+            },
+            "testing": {
+              "score": 8.0,
+              "issues": [],
+              "recommendations": []
+            },
+            "quality": {
+              "score": 8.0,
+              "issues": [],
+              "recommendations": []
+            },
+            "documentation": {
+              "score": 7.0,
+              "issues": [],
+              "recommendations": [
+                "Ensure documentation is updated"
+              ]
+            }
+          },
+          "overall_score": 7.2,
+          "overall_grade": "B",
+          "approval_status": "needs_improvement",
+          "recommendations": [
+            "Define clear acceptance criteria",
+            "Expand story description",
+            "Ensure documentation is updated"
+          ]
+        },
+        "approval_recommended": false,
+        "message": "Comprehensive review completed - B"
+      },
+      "timestamp": "2025-08-18T19:25:22.432328"
+    },
+    {
+      "story_id": "bmad_20250818_192522_story_001",
+      "gate_type": "gate",
+      "result": {
+        "success": true,
+        "gate_assessment": {
+          "story_id": "bmad_20250818_192522_story_001",
+          "assessed_at": "2025-08-18T19:25:22.433334",
+          "gate_result": {
+            "passed": false,
+            "quality_level": "blocked",
+            "check_results": {
+              "qa_review_passed": {
+                "level": "QualityLevel.PASSED",
+                "issues": [],
+                "recommendations": []
+              },
+              "stakeholder_approval": {
+                "level": "QualityLevel.PASSED",
+                "issues": [],
+                "recommendations": []
+              },
+              "deployment_ready": {
+                "level": "QualityLevel.PASSED",
+                "issues": [],
+                "recommendations": []
+              },
+              "optional_user_acceptance_testing": {
+                "level": "QualityLevel.WARNING",
+                "issues": [
+                  "Quality check not implemented"
+                ],
+                "recommendations": [
+                  "Implement specific quality check"
+                ]
+              },
+              "optional_load_testing": {
+                "level": "QualityLevel.WARNING",
+                "issues": [
+                  "Quality check not implemented"
+                ],
+                "recommendations": [
+                  "Implement specific quality check"
+                ]
+              }
+            },
+            "issues": [
+              "Blocking issue detected: missing_approvals"
+            ],
+            "recommendations": [],
+            "gate_record": {
+              "target_state": "completed",
+              "quality_level": "blocked",
+              "checked_at": "2025-08-18T19:25:22.433334",
+              "issues_count": 1,
+              "recommendations_count": 0
+            }
+          },
+          "final_approval": false,
+          "certification_level": "none"
+        },
+        "final_approval": false,
+        "message": "Quality gate assessment completed - none certification"
+      },
+      "timestamp": "2025-08-18T19:25:22.433334"
+    }
+  ],
+  "last_agent_interaction": "2025-08-18T19:25:22.442812",
+  "last_agent": "qa"
+}
