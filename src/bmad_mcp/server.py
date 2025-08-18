@@ -482,7 +482,7 @@ async def main():
     # Configure OpenRouter API key
     if not os.getenv("OPENROUTER_API_KEY"):
         logger.warning("OPENROUTER_API_KEY not set. Some features may not work.")
-    
+
     # Run server
     logger.info("Starting BMAD MCP Server...")
     async with stdio_server() as (read_stream, write_stream):
@@ -499,7 +499,6 @@ async def main():
                 }
             )
         )
-
 
 if __name__ == "__main__":
     asyncio.run(main())
