@@ -32,6 +32,7 @@ from mcp.types import (
 from pydantic import BaseModel
 
 from .agents import AgentManager
+from .agents.coder import BMadCoderAgent
 from .core import BMadLoader, ProjectDetector
 from .core.global_registry import global_registry
 from .routing import OpenRouterClient
@@ -59,6 +60,9 @@ class BMadMCPServer:
             openrouter_client=self.openrouter_client,
             global_registry=self.global_registry
         )
+        
+        # Coder Agent
+        self.coder_agent = BMadCoderAgent()
         
         # Current context
         self.current_agent = None
@@ -458,6 +462,195 @@ class BMadMCPServer:
                         },
                         "required": ["project_path"]
                     }
+                ),
+                # Coder Agent Tools (Serena-inspired semantic code analysis)
+                Tool(
+                    name="bmad_coder_activate_project",
+                    description="Activate a project for semantic code analysis with Serena-inspired features",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "project_path": {
+                                "type": "string",
+                                "description": "Absolute path to the project"
+                            },
+                            "project_name": {
+                                "type": "string",
+                                "description": "Optional project name"
+                            }
+                        },
+                        "required": ["project_path"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_find_symbol",
+                    description="Semantic symbol search (inspired by Serena's find_symbol)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_name": {
+                                "type": "string",
+                                "description": "Name of the symbol to search for"
+                            },
+                            "symbol_type": {
+                                "type": "string",
+                                "description": "Type of symbol (function, class, variable, etc.)"
+                            },
+                            "local_only": {
+                                "type": "boolean",
+                                "description": "Search only in current file",
+                                "default": False
+                            }
+                        },
+                        "required": ["symbol_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_get_symbols_overview",
+                    description="Get overview of top-level symbols in a file",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "Path to the file"
+                            }
+                        },
+                        "required": ["file_path"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_find_referencing_symbols",
+                    description="Find all references to a symbol (Go to References)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "symbol_type": {
+                                "type": "string",
+                                "description": "Optional - type of the symbol"
+                            }
+                        },
+                        "required": ["symbol_location"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_insert_after_symbol",
+                    description="Insert code after a symbol (precise symbol-based editing)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Code to insert"
+                            }
+                        },
+                        "required": ["symbol_location", "content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_replace_symbol_body",
+                    description="Replace the complete body of a symbol",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_location": {
+                                "type": "string",
+                                "description": "Position of the symbol (file:line:column)"
+                            },
+                            "new_content": {
+                                "type": "string",
+                                "description": "New symbol content"
+                            }
+                        },
+                        "required": ["symbol_location", "new_content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_execute_shell_command",
+                    description="Execute shell commands for testing, building, etc.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "command": {
+                                "type": "string",
+                                "description": "Command to execute"
+                            },
+                            "working_dir": {
+                                "type": "string",
+                                "description": "Working directory"
+                            }
+                        },
+                        "required": ["command"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_search_for_pattern",
+                    description="Search for pattern in project (advanced grep functionality)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "description": "Search pattern"
+                            },
+                            "file_types": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "File types to search"
+                            },
+                            "case_sensitive": {
+                                "type": "boolean",
+                                "description": "Case sensitive search",
+                                "default": False
+                            }
+                        },
+                        "required": ["pattern"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_write_memory",
+                    description="Store project-specific memories (Serena feature)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "memory_name": {
+                                "type": "string",
+                                "description": "Name of the memory"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Memory content"
+                            }
+                        },
+                        "required": ["memory_name", "content"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_read_memory",
+                    description="Read project-specific memories",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "memory_name": {
+                                "type": "string",
+                                "description": "Name of the memory"
+                            }
+                        },
+                        "required": ["memory_name"]
+                    }
+                ),
+                Tool(
+                    name="bmad_coder_list_memories",
+                    description="List all available memories",
+                    inputSchema={"type": "object", "properties": {}}
                 )
             ]
         
@@ -585,6 +778,10 @@ class BMadMCPServer:
                         arguments["project_path"],
                         arguments.get("backup", True)
                     )
+                
+                # Coder Agent Tools Handler
+                elif name.startswith("bmad_coder_"):
+                    return await self._handle_coder_tool(name, arguments)
                 
                 else:
                     return [TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -762,6 +959,80 @@ class BMadMCPServer:
             
         except Exception as e:
             return [TextContent(type="text", text=f"❌ Fehler beim Abrufen der Registry-Informationen: {str(e)}")]
+    
+    async def _handle_coder_tool(self, name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+        """Handle coder agent tool calls"""
+        try:
+            if name == "bmad_coder_activate_project":
+                project_path = arguments["project_path"]
+                project_name = arguments.get("project_name")
+                result = await self.coder_agent.activate_project(project_path, project_name)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_find_symbol":
+                symbol_name = arguments["symbol_name"]
+                symbol_type = arguments.get("symbol_type")
+                local_only = arguments.get("local_only", False)
+                result = await self.coder_agent.find_symbol(symbol_name, symbol_type, local_only)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_get_symbols_overview":
+                file_path = arguments["file_path"]
+                result = await self.coder_agent.get_symbols_overview(file_path)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_find_referencing_symbols":
+                symbol_location = arguments["symbol_location"]
+                symbol_type = arguments.get("symbol_type")
+                result = await self.coder_agent.find_referencing_symbols(symbol_location, symbol_type)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_insert_after_symbol":
+                symbol_location = arguments["symbol_location"]
+                content = arguments["content"]
+                result = await self.coder_agent.insert_after_symbol(symbol_location, content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_replace_symbol_body":
+                symbol_location = arguments["symbol_location"]
+                new_content = arguments["new_content"]
+                result = await self.coder_agent.replace_symbol_body(symbol_location, new_content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_execute_shell_command":
+                command = arguments["command"]
+                working_dir = arguments.get("working_dir")
+                result = await self.coder_agent.execute_shell_command(command, working_dir)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_search_for_pattern":
+                pattern = arguments["pattern"]
+                file_types = arguments.get("file_types")
+                case_sensitive = arguments.get("case_sensitive", False)
+                result = await self.coder_agent.search_for_pattern(pattern, file_types, case_sensitive)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_write_memory":
+                memory_name = arguments["memory_name"]
+                content = arguments["content"]
+                result = await self.coder_agent.write_memory(memory_name, content)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_read_memory":
+                memory_name = arguments["memory_name"]
+                result = await self.coder_agent.read_memory(memory_name)
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            elif name == "bmad_coder_list_memories":
+                result = await self.coder_agent.list_memories()
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
+            
+            else:
+                return [TextContent(type="text", text=f"❌ Unbekanntes Coder-Tool: {name}")]
+                
+        except Exception as e:
+            logger.error(f"Fehler beim Ausführen von Coder-Tool {name}: {str(e)}")
+            return [TextContent(type="text", text=f"❌ Fehler beim Ausführen von {name}: {str(e)}")]
 
 
 async def main():
