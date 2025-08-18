@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  bmad-mcp-server:
+    build: .
+    container_name: bmad-mcp-server
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - BMAD_LOG_LEVEL=INFO
+    volumes:
+      # Mount local .bmad-core if available
+      - ./.bmad-core:/app/.bmad-core:ro
+      # Mount host project directory (optional)
+      - ${PWD}:/workspace:ro
+    ports:
+      # Expose port for HTTP mode (if implemented)
+      - "3000:3000"
+    restart: unless-stopped
+    
+    # For stdio mode, you might want to run interactively
+    stdin_open: true
+    tty: true
+    
+    # Override command for different modes
+    # command: ["python", "-m", "bmad_mcp.server", "--http", "--port", "3000"]
+    
+  # Optional: Development environment with hot reload
+  bmad-mcp-dev:
+    build: .
+    container_name: bmad-mcp-dev
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - BMAD_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+    volumes:
+      # Mount source for development
+      - ./src:/app/src:rw
+      - ./config:/app/config:rw
+      - ./.bmad-core:/app/.bmad-core:ro
+    ports:
+      - "3001:3000"
+    command: ["python", "-m", "bmad_mcp.server"]
+    profiles:
+      - dev

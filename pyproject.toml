@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bmad-mcp-server"
+version = "1.0.0"
+description = "BMAD MCP Server - Advanced agent routing with OpenRouter integration"
+authors = [
+    { name = "BMAD Team", email = "info@bmad.dev" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+dependencies = [
+    "mcp>=1.0.0",
+    "pydantic>=2.0.0",
+    "aiohttp>=3.8.0",
+    "pyyaml>=6.0",
+    "openai>=1.0.0",
+    "anthropic>=0.25.0",
+    "jinja2>=3.1.0",
+    "pathlib",
+    "asyncio",
+    "typing-extensions>=4.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/bmad-mcp-server"
+Repository = "https://github.com/yourusername/bmad-mcp-server"
+Issues = "https://github.com/yourusername/bmad-mcp-server/issues"
+
+[project.scripts]
+bmad-mcp-server = "bmad_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
