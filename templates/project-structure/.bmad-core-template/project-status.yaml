@@ -1,0 +1,53 @@
+# BMAD Project Status - Live Status für Instant Context Loading
+
+project:
+  name: "new-project"
+  type: "web-app"
+  created: "2024-01-20"
+  
+current_state:
+  phase: "planning"
+  active_agent: "analyst"
+  current_task: "Initial project setup and analysis"
+  progress: 5
+  
+development:
+  current_branch: "main"
+  last_commit: "Initial commit"
+  current_feature: "project-setup"
+  
+next_steps:
+  immediate: "Complete requirements analysis with *agent analyst"
+  this_week: 
+    - "Define product requirements document"
+    - "Create initial technical architecture"
+    - "Set up development environment"
+  blockers: []
+  
+context:
+  tech_stack: []
+  project_path: ""
+  has_docs: true
+  has_src: false
+  has_tests: false
+  git_repo: true
+  
+quality_gates:
+  prd_approved: false
+  architecture_approved: false
+  code_review_passed: false
+  tests_passing: false
+  
+workflows:
+  current: ""
+  available:
+    - "bmad-web-app-development"
+    - "bmad-api-development" 
+    - "bmad-library-development"
+  
+recommended_actions:
+  - "Use '*agent analyst' to start requirements analysis"
+  - "Create PRD with '*task create-prd'"
+  - "Define architecture with '*agent architect'"
+
+last_updated: "2024-01-20T10:00:00Z"

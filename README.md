@@ -23,6 +23,14 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 - **Notion Integration**: Bi-directional sync with Notion databases
 - **TodoWrite Bridge**: Seamless Claude integration
 
+### ⏱️ **Time & Cost Tracking** ⭐ NEW!
+- **Precise Time Tracking**: Exact time spent on each project with session management
+- **AI Cost Calculation**: Automatic calculation of AI model costs per project
+- **Project Billing**: Comprehensive billing reports for client invoicing
+- **Multi-format Export**: JSON, CSV, and invoice-style billing reports
+- **Cost Optimization**: Track and optimize AI model usage across projects
+- **Session Management**: Auto-end stale sessions and track work patterns
+
 ### 🎨 **Template-System & Standardisierte Projektstrukturen** ⭐ NEW!
 - **6 Projekt-Templates**: standard, web-app, api, mobile, data-science, infrastructure
 - **Automatische Struktur-Erstellung**: Einheitliche `.bmad-core/` Verzeichnisse
@@ -126,6 +134,19 @@ Add to your IDE's MCP configuration:
 | `bmad_get_today_tasks` | Today's scheduled tasks | Daily workload view |
 | `bmad_get_agent_tasks` | Agent-specific task list | Filter by agent |
 
+### ⏱️ **Time & Cost Tracking** ⭐ NEW!
+| Tool | Description | Example |
+|------|-------------|---------|
+| `bmad_start_timer` | Start time tracking for a task | `task_id`, `agent`, `session_type` |
+| `bmad_stop_timer` | Stop timer and calculate costs | `task_id`, `ai_model`, `tokens` |
+| `bmad_get_active_timers` | List all currently running timers | Active sessions overview |
+| `bmad_get_task_time_summary` | Time tracking summary for task | Hours, cost, sessions |
+| `bmad_get_daily_time_report` | Daily time tracking report | Project breakdown, hours |
+| `bmad_get_project_billing` | Generate project billing report | JSON, CSV, invoice formats |
+| `bmad_auto_end_stale_sessions` | End sessions running too long | Cleanup stale timers |
+| `bmad_update_model_costs` | Update AI model pricing | Configure cost per token |
+| `bmad_get_model_costs` | Get current model costs | View pricing configuration |
+
 ### ⚡ **Enhanced Features**
 | Tool | Description | Example |
 |------|-------------|---------|
@@ -225,6 +246,43 @@ bmad_end_work_session(
 bmad_get_realtime_status()
 ```
 
+### Time & Cost Tracking ⭐ NEW!
+```python
+# Start time tracking for a task
+bmad_start_timer(
+    task_id="feature-implementation",
+    agent="dev",
+    session_type="development",
+    description="Implementing user authentication system"
+)
+
+# Stop timer with AI cost calculation
+bmad_stop_timer(
+    task_id="feature-implementation",
+    ai_model_used="claude-sonnet-4",
+    tokens_input=1500,
+    tokens_output=800,
+    mark_completed=False
+)
+
+# Get task time summary
+bmad_get_task_time_summary(task_id="feature-implementation")
+
+# Generate project billing report
+bmad_get_project_billing(
+    project_id="my-project-id",
+    start_date="2025-01-01",
+    end_date="2025-01-31",
+    export_format="invoice"  # json, csv, or invoice
+)
+
+# Get daily tracking report
+bmad_get_daily_time_report(date="2025-01-20")
+
+# Auto-end stale sessions (running >8 hours)
+bmad_auto_end_stale_sessions(max_hours=8)
+```
+
 ### Project Context
 ```python
 # Detect BMAD project
@@ -291,6 +349,7 @@ bmad-mcp-server/
 │   └── bmad_mcp/
 │       ├── core/                    # Core functionality
 │       │   ├── task_tracker.py      # Advanced task management
+│       │   ├── time_cost_tracker.py # Time & cost tracking ⭐ NEW!
 │       │   ├── console_formatter.py # Live output formatting  
 │       │   ├── realtime_updater.py  # Real-time monitoring
 │       │   ├── time_monitor.py      # Scheduled monitoring
@@ -398,6 +457,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## 📈 **Roadmap**
 
 ### ✅ **Recently Completed (v2.1)**
+- [x] **Time & Cost Tracking System**: Precise project billing with AI cost calculation ⭐ NEW!
 - [x] **BMAD-METHOD Workflow System**: Complete workflow implementation with intelligent orchestration
 - [x] **Quality Gates System**: All 6 @qa commands (*risk, *design, *trace, *nfr, *review, *gate)
 - [x] **Serena Bridge Agent**: LSP-based semantic code intelligence integration

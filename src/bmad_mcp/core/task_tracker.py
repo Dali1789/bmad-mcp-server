@@ -12,6 +12,8 @@ from dataclasses import dataclass, asdict
 import threading
 import time
 
+from .time_cost_tracker import BMadTimeCostTracker, TimeSession
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,6 +77,10 @@ class BMadTaskTracker:
         self.active_phases: Dict[str, List[str]] = {}
         self.monitoring_active = False
         self.monitoring_thread = None
+        
+        # Initialize time and cost tracking
+        self.time_cost_tracker = BMadTimeCostTracker(global_registry)
+        self.active_task_sessions: Dict[str, str] = {}  # task_id -> session_id mapping
         
         # Project integration
         self.current_project_id = "24d5e4b8-4c44-811b-a198-eb8d7b3a527b"  # Default BMAD project
@@ -697,3 +703,191 @@ class BMadTaskTracker:
         
         logger.info(f"Created project task: {name} for project {target_project}")
         return task
+    
+    def start_task_timer(
+        self,
+        task_id: str,
+        agent: str,
+        session_type: str = "development",
+        description: Optional[str] = None,
+        ai_model: Optional[str] = None
+    ) -> Optional[TimeSession]:
+        """Start time tracking for a task"""
+        task = self.tasks.get(task_id)
+        if not task:
+            logger.error(f"Task not found: {task_id}")
+            return None
+        
+        # End any existing session for this task
+        if task_id in self.active_task_sessions:
+            self.stop_task_timer(task_id)
+        
+        # Start new session
+        session = self.time_cost_tracker.start_session(
+            task_id=task_id,
+            project_id=task.project or self.current_project_id,
+            agent=agent,
+            session_type=session_type,
+            description=description or task.name
+        )
+        
+        self.active_task_sessions[task_id] = session.id
+        
+        # Update task status to in_progress
+        if task.status == "pending":
+            task.status = "in_progress"
+            task.updated_at = datetime.now().isoformat()
+            self._save_tasks()
+        
+        logger.info(f"Started timer for task: {task.name} ({task_id})")
+        return session
+    
+    def stop_task_timer(
+        self,
+        task_id: str,
+        ai_model_used: Optional[str] = None,
+        tokens_input: int = 0,
+        tokens_output: int = 0,
+        mark_completed: bool = False
+    ) -> Optional[TimeSession]:
+        """Stop time tracking for a task"""
+        session_id = self.active_task_sessions.get(task_id)
+        if not session_id:
+            logger.error(f"No active timer for task: {task_id}")
+            return None
+        
+        # End the session
+        session = self.time_cost_tracker.end_session(
+            session_id=session_id,
+            ai_model_used=ai_model_used,
+            tokens_input=tokens_input,
+            tokens_output=tokens_output
+        )
+        
+        if session:
+            # Update task with tracked time
+            task = self.tasks.get(task_id)
+            if task:
+                hours_worked = session.get_duration_hours()
+                task.completed_hours += hours_worked
+                task.updated_at = datetime.now().isoformat()
+                
+                # Check if task should be marked as completed
+                if mark_completed or task.completed_hours >= task.allocated_hours:
+                    task.status = "completed"
+                    self._generate_follow_up_tasks(task_id)
+                    self._check_phase_completion()
+                
+                self._save_tasks()
+                
+                logger.info(f"Stopped timer for task: {task.name}, Worked: {hours_worked:.2f}h")
+            
+            # Remove from active sessions
+            del self.active_task_sessions[task_id]
+        
+        return session
+    
+    def get_task_time_summary(self, task_id: str) -> Dict[str, Any]:
+        """Get time tracking summary for a specific task"""
+        task = self.tasks.get(task_id)
+        if not task:
+            return {"error": f"Task not found: {task_id}"}
+        
+        # Get billing summary from time tracker
+        project_summary = self.time_cost_tracker.get_project_billing_summary(
+            project_id=task.project or self.current_project_id
+        )
+        
+        # Filter sessions for this specific task
+        conn = self.time_cost_tracker._get_db_path()
+        import sqlite3
+        conn = sqlite3.connect(conn)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT * FROM time_sessions 
+            WHERE task_id = ?
+            ORDER BY start_time DESC
+        ''', (task_id,))
+        
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        sessions = [dict(zip(columns, row)) for row in rows]
+        
+        conn.close()
+        
+        # Calculate task-specific totals
+        total_seconds = sum(s['duration_seconds'] for s in sessions)
+        total_hours = total_seconds / 3600.0
+        total_cost = sum(s['cost_usd'] for s in sessions)
+        
+        return {
+            "task_id": task_id,
+            "task_name": task.name,
+            "allocated_hours": task.allocated_hours,
+            "completed_hours": task.completed_hours,
+            "tracked_hours": total_hours,
+            "total_cost_usd": total_cost,
+            "sessions_count": len(sessions),
+            "status": task.status,
+            "active_session": task_id in self.active_task_sessions,
+            "sessions": sessions
+        }
+    
+    def get_project_billing_report(
+        self,
+        project_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        export_format: str = "json"
+    ) -> str:
+        """Generate project billing report"""
+        target_project = project_id or self.current_project_id
+        project_name = self.project_context.get("name", target_project)
+        
+        return self.time_cost_tracker.export_billing_data(
+            project_id=target_project,
+            export_format=export_format,
+            start_date=start_date,
+            end_date=end_date
+        )
+    
+    def get_daily_time_report(self, date: Optional[str] = None) -> Dict[str, Any]:
+        """Get daily time tracking report"""
+        return self.time_cost_tracker.get_daily_tracking_report(date)
+    
+    def auto_end_stale_sessions(self, max_hours: int = 8) -> List[TimeSession]:
+        """End sessions that have been running too long"""
+        ended_sessions = self.time_cost_tracker.auto_end_stale_sessions(max_hours)
+        
+        # Update active_task_sessions mapping
+        for session in ended_sessions:
+            if session.task_id in self.active_task_sessions:
+                del self.active_task_sessions[session.task_id]
+        
+        return ended_sessions
+    
+    def get_active_timers(self) -> List[Dict[str, Any]]:
+        """Get all currently active timers"""
+        active_sessions = self.time_cost_tracker.get_active_sessions()
+        timers = []
+        
+        for session in active_sessions:
+            task = self.tasks.get(session.task_id)
+            current_time = datetime.now()
+            start_time = datetime.fromisoformat(session.start_time)
+            duration = current_time - start_time
+            
+            timers.append({
+                "session_id": session.id,
+                "task_id": session.task_id,
+                "task_name": task.name if task else "Unknown Task",
+                "agent": session.agent,
+                "start_time": session.start_time,
+                "duration_hours": duration.total_seconds() / 3600.0,
+                "project_id": session.project_id,
+                "session_type": session.session_type,
+                "description": session.description
+            })
+        
+        return timers

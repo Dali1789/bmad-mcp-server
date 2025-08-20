@@ -1,4 +1,4 @@
-# BMAD MCP Server - Core Dependencies
+# BMAD MCP Server v2.0 - Railway Deployment Dependencies
 
 # MCP (Model Context Protocol) framework
 mcp>=1.1.0
@@ -20,33 +20,27 @@ python-dateutil>=2.8.0
 # Environment variables
 python-dotenv>=1.0.0
 
-# Async support
-asyncio>=3.4.3
-
-# Optional dependencies for enhanced features
-
-# Notion API integration (optional)
-notion-client>=2.0.0
-
-# Advanced scheduling (optional)
-schedule>=1.2.0
-
-# Progress bars and visual feedback (optional)  
-tqdm>=4.66.0
-
-# Color output support (optional)
-colorama>=0.4.6
-
-# Rich text formatting (optional)
-rich>=13.0.0
-
 # JSON handling
 orjson>=3.8.0
 
 # Utilities
 typing-extensions>=4.0.0
 
-# Server dependencies (for Docker/web interface)
+# Server dependencies for Railway deployment
 fastapi>=0.100.0
-uvicorn>=0.20.0
-sse-starlette>=1.6.0
+uvicorn[standard]>=0.20.0
+
+# Health check support
+requests>=2.31.0
+
+# Logging
+structlog>=23.0.0
+
+# File operations
+pathlib2>=2.3.7
+
+# Production ASGI server
+gunicorn>=21.2.0
+
+# Railway deployment essentials
+starlette>=0.27.0

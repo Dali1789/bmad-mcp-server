@@ -8,7 +8,6 @@ from .architect import ArchitectAgent
 from .developer import DeveloperAgent
 from .pm import ProjectManagerAgent
 from .qa import QAAgent
-from .serena_agent_wrapper import SerenaAgentWrapper
 from .base_agent import BaseAgent
 
 
@@ -22,7 +21,6 @@ class AgentManager:
             "dev": DeveloperAgent(),
             "pm": ProjectManagerAgent(), 
             "qa": QAAgent(),
-            "serena": SerenaAgentWrapper()
         }
         self.current_agent: Optional[str] = None
     

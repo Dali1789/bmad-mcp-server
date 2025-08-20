@@ -17,6 +17,7 @@ from ..core import (
     BMadWorkDaySimulator, BMadRealtimeUpdater
 )
 from ..core.project_templates import template_manager
+from ..core.bmad_core_loader import get_bmad_core_loader
 from ..routing import OpenRouterClient
 
 
@@ -36,6 +37,9 @@ class BMadTools:
         self.project_detector = project_detector
         self.openrouter_client = openrouter_client
         self.global_registry = global_registry
+        
+        # Initialize BMAD Core Loader
+        self.bmad_core = get_bmad_core_loader()
         
         # Initialize task management components
         self.task_tracker = BMadTaskTracker(global_registry)
@@ -763,5 +767,189 @@ bmad_create_project('/pfad/zum/projekt', '{template_name}')
 • Progress Updates: {status['daily_metrics']['progress_updates']}
 • Total Work Time: {status['daily_metrics']['total_work_time']:.1f}h
 """
+        
+        return [TextContent(type="text", text=result)]
+    
+    # Original BMAD Core System Integration Methods
+    
+    async def get_original_agent_definition(self, agent_name: str) -> List[TextContent]:
+        """Get original agent definition from BMAD Core system"""
+        agent_content = self.bmad_core.get_agent_definition(agent_name)
+        
+        if not agent_content:
+            available_agents = list(self.bmad_core.get_all_agents().keys())
+            result = f"❌ **Agent nicht gefunden**: {agent_name}\n\n📋 **Verfügbare Agents**: {', '.join(available_agents)}"
+        else:
+            result = f"🤖 **BMAD Agent: {agent_name}**\n\n{agent_content}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_original_checklist(self, checklist_name: str) -> List[TextContent]:
+        """Get original checklist from BMAD Core system"""
+        checklist_content = self.bmad_core.get_checklist(checklist_name)
+        
+        if not checklist_content:
+            available_checklists = list(self.bmad_core.get_all_checklists().keys())
+            result = f"❌ **Checklist nicht gefunden**: {checklist_name}\n\n📋 **Verfügbare Checklisten**: {', '.join(available_checklists)}"
+        else:
+            result = f"✅ **BMAD Checklist: {checklist_name}**\n\n{checklist_content}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_original_workflow(self, workflow_name: str) -> List[TextContent]:
+        """Get original workflow from BMAD Core system"""
+        workflow_data = self.bmad_core.get_workflow(workflow_name)
+        
+        if not workflow_data:
+            available_workflows = list(self.bmad_core.get_all_workflows().keys())
+            result = f"❌ **Workflow nicht gefunden**: {workflow_name}\n\n📋 **Verfügbare Workflows**: {', '.join(available_workflows)}"
+        else:
+            import yaml
+            workflow_yaml = yaml.dump(workflow_data, indent=2, default_flow_style=False)
+            result = f"🔄 **BMAD Workflow: {workflow_name}**\n\n```yaml\n{workflow_yaml}\n```"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_original_agent_team(self, team_name: str) -> List[TextContent]:
+        """Get original agent team configuration from BMAD Core system"""
+        team_data = self.bmad_core.get_agent_team(team_name)
+        
+        if not team_data:
+            available_teams = list(self.bmad_core.get_all_teams().keys())
+            result = f"❌ **Agent Team nicht gefunden**: {team_name}\n\n📋 **Verfügbare Teams**: {', '.join(available_teams)}"
+        else:
+            import yaml
+            team_yaml = yaml.dump(team_data, indent=2, default_flow_style=False)
+            result = f"👥 **BMAD Agent Team: {team_name}**\n\n```yaml\n{team_yaml}\n```"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_original_task_definition(self, task_name: str) -> List[TextContent]:
+        """Get original task definition from BMAD Core system"""
+        task_content = self.bmad_core.get_task_definition(task_name)
+        
+        if not task_content:
+            available_tasks = list(self.bmad_core.get_all_tasks().keys())
+            result = f"❌ **Task nicht gefunden**: {task_name}\n\n📋 **Verfügbare Tasks**: {', '.join(available_tasks)}"
+        else:
+            result = f"🔧 **BMAD Task: {task_name}**\n\n{task_content}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_original_template(self, template_name: str) -> List[TextContent]:
+        """Get original template from BMAD Core system"""
+        template_content = self.bmad_core.get_template(template_name)
+        
+        if not template_content:
+            available_templates = list(self.bmad_core.get_all_templates().keys())
+            result = f"❌ **Template nicht gefunden**: {template_name}\n\n📋 **Verfügbare Templates**: {', '.join(available_templates)}"
+        else:
+            result = f"📄 **BMAD Template: {template_name}**\n\n{template_content}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_bmad_knowledge_base(self) -> List[TextContent]:
+        """Get BMAD Knowledge Base from original Core system"""
+        kb_content = self.bmad_core.get_knowledge_base()
+        
+        if not kb_content:
+            result = "❌ **BMAD Knowledge Base nicht gefunden**"
+        else:
+            # Truncate if too long for display
+            if len(kb_content) > 8000:
+                kb_preview = kb_content[:8000] + "\n\n... [Inhalt gekürzt - vollständige KB im Original verfügbar]"
+            else:
+                kb_preview = kb_content
+                
+            result = f"📚 **BMAD Knowledge Base**\n\n{kb_preview}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def get_bmad_user_guide(self) -> List[TextContent]:
+        """Get BMAD User Guide from original Core system"""
+        guide_content = self.bmad_core.get_user_guide()
+        
+        if not guide_content:
+            result = "❌ **BMAD User Guide nicht gefunden**"
+        else:
+            # Truncate if too long for display
+            if len(guide_content) > 10000:
+                guide_preview = guide_content[:10000] + "\n\n... [User Guide gekürzt - vollständiger Inhalt im Original verfügbar]"
+            else:
+                guide_preview = guide_content
+                
+            result = f"📖 **BMAD User Guide**\n\n{guide_preview}"
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def list_original_bmad_components(self) -> List[TextContent]:
+        """List all components available in original BMAD Core system"""
+        status = self.bmad_core.get_system_status()
+        
+        result = f"""🏗️ **Original BMAD Core System Status**
+
+**Core Path**: `{status['core_path']}`
+
+📊 **Komponenten Übersicht**:
+• **Agents**: {status['agents_loaded']} geladen
+• **Agent Teams**: {status['teams_loaded']} geladen
+• **Checklisten**: {status['checklists_loaded']} geladen
+• **Tasks**: {status['tasks_loaded']} geladen
+• **Templates**: {status['templates_loaded']} geladen
+• **Workflows**: {status['workflows_loaded']} geladen
+• **Data Files**: {status['data_files_loaded']} geladen
+• **User Guide**: {'✅ Verfügbar' if status['user_guide_available'] else '❌ Nicht verfügbar'}
+
+🤖 **Verfügbare Agents**:
+{', '.join(status['loaded_agents'])}
+
+👥 **Verfügbare Teams**:
+{', '.join(status['loaded_teams'])}
+
+🔄 **Verfügbare Workflows**:
+{', '.join(status['loaded_workflows'])}
+
+💡 **Verwendung**:
+- `bmad_get_original_agent_definition <agent_name>`
+- `bmad_get_original_checklist <checklist_name>`
+- `bmad_get_original_workflow <workflow_name>`
+- `bmad_get_original_agent_team <team_name>`
+- `bmad_get_original_task_definition <task_name>`
+- `bmad_get_original_template <template_name>`
+"""
+        
+        return [TextContent(type="text", text=result)]
+    
+    async def validate_bmad_core_system(self) -> List[TextContent]:
+        """Validate original BMAD Core system integrity"""
+        validation = self.bmad_core.validate_core_structure()
+        
+        if validation['valid']:
+            status_emoji = "✅"
+            status_text = "GÜLTIG"
+        else:
+            status_emoji = "❌"
+            status_text = "FEHLER GEFUNDEN"
+        
+        result = f"""{status_emoji} **BMAD Core System Validierung: {status_text}**
+
+"""
+        
+        if validation['errors']:
+            result += "❌ **Kritische Fehler**:\n"
+            for error in validation['errors']:
+                result += f"• {error}\n"
+            result += "\n"
+        
+        if validation['warnings']:
+            result += "⚠️ **Warnungen**:\n"
+            for warning in validation['warnings']:
+                result += f"• {warning}\n"
+            result += "\n"
+        
+        if validation['valid']:
+            result += "🎯 **System bereit für BMAD-Operationen**"
+        else:
+            result += "🔧 **Konfiguration erforderlich für vollständige Funktionalität**"
         
         return [TextContent(type="text", text=result)]

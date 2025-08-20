@@ -1,0 +1,70 @@
+# BMAD Project Status Template
+# Wird automatisch vom Instant Context System gelesen
+
+project:
+  name: "{{PROJECT_NAME}}"
+  type: "{{PROJECT_TYPE}}"  # web-app, api, library, etc.
+  created: "{{DATE_CREATED}}"
+  
+current_state:
+  phase: "planning"  # planning, architecture, development, testing, deployment, maintenance
+  active_agent: "analyst"
+  current_task: "Initial project analysis"
+  progress: 0
+  
+development:
+  current_branch: "main"
+  last_commit: ""
+  current_feature: ""
+  
+team:
+  lead_agent: "orchestrator"
+  assigned_agents:
+    - "analyst"
+    - "architect" 
+    - "dev"
+    - "qa"
+    - "pm"
+  
+next_steps:
+  immediate: "Complete project analysis and requirements"
+  this_week: 
+    - "Define core requirements"
+    - "Create technical architecture"
+  blockers: []
+  
+context:
+  tech_stack: []
+  frameworks: []
+  database: ""
+  deployment_target: ""
+  api_style: ""  # REST, GraphQL, etc.
+  
+quality_gates:
+  prd_approved: false
+  architecture_approved: false
+  code_review_passed: false
+  tests_passing: false
+  deployment_ready: false
+
+workflows:
+  current: ""
+  completed: []
+  
+milestones:
+  - name: "Project Setup"
+    status: "pending"
+    target_date: ""
+  - name: "MVP Complete"
+    status: "pending" 
+    target_date: ""
+  - name: "Production Ready"
+    status: "pending"
+    target_date: ""
+
+metrics:
+  complexity_score: 0
+  estimated_hours: 0
+  actual_hours: 0
+  
+last_updated: "{{LAST_UPDATED}}"

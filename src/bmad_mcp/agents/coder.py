@@ -1,6 +1,6 @@
 """
 BMAD Coder Agent - Advanced Semantic Code Analysis and Editing
-Integriert Serena's semantische Code-Analyse Features für präzise Codebearbeitung
+Advanced semantic code analysis and precise code editing
 """
 
 import asyncio
@@ -18,7 +18,7 @@ class BMadCoderAgent:
     """
     Advanced Coding Agent mit semantischer Code-Analyse
     
-    Features inspiriert von Serena MCP:
+    Features inspiriert von semantic code analysis MCP:
     - Symbolbasierte Code-Navigation
     - Semantische Code-Suche  
     - Präzise Code-Editierung
@@ -50,8 +50,8 @@ class BMadCoderAgent:
             # Projekt-Struktur analysieren
             project_info = await self._analyze_project_structure()
             
-            # Serena-Integration Setup
-            await self._setup_serena_integration()
+            # semantic code analysis-Integration Setup
+            await self._setup_semantic_integration()
             
             logger.info(f"Projekt '{self.active_project}' erfolgreich aktiviert")
             
@@ -60,7 +60,7 @@ class BMadCoderAgent:
                 "project_name": self.active_project,
                 "project_path": str(self.project_path),
                 "project_info": project_info,
-                "serena_integration": True
+                "semantic_integration": True
             }
             
         except Exception as e:
@@ -69,7 +69,7 @@ class BMadCoderAgent:
     
     async def find_symbol(self, symbol_name: str, symbol_type: str = None, local_only: bool = False) -> List[Dict[str, Any]]:
         """
-        Semantische Symbol-Suche (inspiriert von Serena's find_symbol)
+        Semantische Symbol-Suche (inspiriert von semantic code analysis's find_symbol)
         
         Args:
             symbol_name: Name des zu suchenden Symbols
@@ -82,9 +82,9 @@ class BMadCoderAgent:
         try:
             symbols = []
             
-            # Serena-ähnliche symbolbasierte Suche
+            # semantic code analysis-ähnliche symbolbasierte Suche
             if self.active_project:
-                symbols = await self._execute_serena_find_symbol(symbol_name, symbol_type, local_only)
+                symbols = await self._execute_semantic_find_symbol(symbol_name, symbol_type, local_only)
             else:
                 # Fallback auf traditionelle Textsuche
                 symbols = await self._fallback_text_search(symbol_name)
@@ -271,7 +271,7 @@ class BMadCoderAgent:
     
     async def write_memory(self, memory_name: str, content: str) -> Dict[str, Any]:
         """
-        Speichert Projekt-spezifische Memories (Serena-Feature)
+        Speichert Projekt-spezifische Memories (semantic code analysis-Feature)
         
         Args:
             memory_name: Name des Memory
@@ -386,14 +386,14 @@ class BMadCoderAgent:
             logger.error(f"Fehler bei Projekt-Analyse: {e}")
             return {}
     
-    async def _setup_serena_integration(self):
-        """Setup für Serena-Integration"""
+    async def _setup_semantic_integration(self):
+        """Setup für semantic code analysis-Integration"""
         try:
-            # Erstelle Serena-Konfiguration falls nicht vorhanden
-            serena_dir = self.project_path / '.serena'
-            serena_dir.mkdir(exist_ok=True)
+            # Erstelle semantic code analysis-Konfiguration falls nicht vorhanden
+            semantic_dir = self.project_path / '.semantic'
+            semantic_dir.mkdir(exist_ok=True)
             
-            project_yml = serena_dir / 'project.yml'
+            project_yml = semantic_dir / 'project.yml'
             if not project_yml.exists():
                 config = {
                     'name': self.active_project,
@@ -412,10 +412,10 @@ class BMadCoderAgent:
                 with open(project_yml, 'w') as f:
                     yaml.dump(config, f, default_flow_style=False)
             
-            logger.info("Serena-Integration erfolgreich konfiguriert")
+            logger.info("semantic code analysis-Integration erfolgreich konfiguriert")
             
         except Exception as e:
-            logger.error(f"Fehler bei Serena-Setup: {e}")
+            logger.error(f"Fehler bei semantic code analysis-Setup: {e}")
     
     def _detect_language(self, file_path: Path) -> Optional[str]:
         """Erkennt die Programmiersprache einer Datei"""
@@ -443,18 +443,18 @@ class BMadCoderAgent:
         
         return language_map.get(suffix)
     
-    async def _execute_serena_find_symbol(self, symbol_name: str, symbol_type: str, local_only: bool) -> List[Dict[str, Any]]:
-        """Führt Serena's find_symbol über uvx aus"""
+    async def _execute_semantic_find_symbol(self, symbol_name: str, symbol_type: str, local_only: bool) -> List[Dict[str, Any]]:
+        """Führt semantic code analysis's find_symbol über uvx aus"""
         try:
-            # Placeholder for actual Serena integration
-            # In production, this would call the actual Serena tools
+            # Placeholder for actual semantic code analysis integration
+            # In production, this would call the actual semantic code analysis tools
             return []
         except Exception as e:
-            logger.error(f"Fehler bei Serena find_symbol: {e}")
+            logger.error(f"Fehler bei semantic code analysis find_symbol: {e}")
             return []
     
     async def _fallback_text_search(self, symbol_name: str) -> List[Dict[str, Any]]:
-        """Fallback Textsuche wenn Serena nicht verfügbar"""
+        """Fallback Textsuche wenn semantic code analysis nicht verfügbar"""
         try:
             results = []
             

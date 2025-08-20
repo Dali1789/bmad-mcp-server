@@ -51,7 +51,6 @@ class BMadWorkflowEngine:
             "dev": None,
             "qa": None,
             "coder": None,
-            "serena": None
         }
         
         # Event handlers
