@@ -341,6 +341,44 @@ bmad_simulate_agent_workday(agent="qa", hours=6.0)
 bmad_simulate_crisis_scenario(crisis_type="blocked_task")
 ```
 
+### Advanced Time Tracking Workflows ⭐ NEW!
+```python
+# Start comprehensive work session
+bmad_start_timer(
+    task_id="user-auth-system",
+    agent="dev",
+    session_type="development",
+    description="Implementing OAuth2 integration"
+)
+
+# Work on task with AI assistance
+# ... development work with AI model usage ...
+
+# Stop timer with detailed AI cost tracking
+bmad_stop_timer(
+    task_id="user-auth-system",
+    ai_model_used="claude-sonnet-4",
+    tokens_input=2500,
+    tokens_output=1200,
+    mark_completed=True
+)
+
+# Generate comprehensive project billing
+billing_report = bmad_get_project_billing(
+    project_id="client-project-2025",
+    start_date="2025-01-01",
+    end_date="2025-01-31",
+    export_format="invoice"
+)
+
+# Monitor daily productivity
+daily_report = bmad_get_daily_time_report("2025-01-20")
+print(f"Today: {daily_report['total_hours']:.2f}h, ${daily_report['total_cost_usd']:.2f}")
+
+# Automatic session management
+bmad_auto_end_stale_sessions(max_hours=6)  # End sessions > 6 hours
+```
+
 ## 🏗️ **Architecture**
 
 ```
