@@ -37,17 +37,79 @@ class BMadCoreLoader:
     
     def _find_bmad_core_path(self) -> str:
         """Findet automatisch BMAD Core Pfad"""
+        # Production/Railway Environment - use bundled templates
+        if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
+            templates_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "templates", "bmad-core")
+            if os.path.exists(templates_path):
+                return templates_path
+                
+        # Local Development Paths
         possible_paths = [
             "C:\\Users\\Faber\\AppData\\Roaming\\Claude\\gutachter-app\\.bmad-core",
             "C:\\Users\\Faber\\AppData\\Roaming\\Claude\\.bmad-core",
-            "C:\\Users\\Faber\\AppData\\Roaming\\Claude\\Projekte\\_project-template\\.bmad-core"
+            "C:\\Users\\Faber\\AppData\\Roaming\\Claude\\Projekte\\_project-template\\.bmad-core",
+            # Unix-like fallback paths
+            "/app/templates/bmad-core",
+            "./templates/bmad-core",
+            "../templates/bmad-core"
         ]
         
         for path in possible_paths:
             if os.path.exists(path):
                 return path
                 
+        # Production fallback - create minimal structure
+        if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
+            return self._create_minimal_core_structure()
+                
         raise FileNotFoundError("BMAD Core System nicht gefunden")
+    
+    def _create_minimal_core_structure(self) -> str:
+        """Erstellt minimale BMAD Core Struktur für Production Environment"""
+        import tempfile
+        
+        # Temporäres Verzeichnis in /tmp erstellen
+        temp_dir = os.path.join(tempfile.gettempdir(), "bmad-core-minimal")
+        
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            # Minimale Agents erstellen
+            agents_dir = os.path.join(temp_dir, "agents")
+            os.makedirs(agents_dir, exist_ok=True)
+            
+            minimal_agents = {
+                "analyst.md": "# BMAD Analyst Agent\nAnalysiert und bewertet Projektanforderungen.",
+                "architect.md": "# BMAD Architect Agent\nEntwirft technische Architektur und Systemdesign.",
+                "dev.md": "# BMAD Developer Agent\nImplementiert und entwickelt Software-Lösungen.",
+                "pm.md": "# BMAD Project Manager Agent\nVerwaltet Projekte und koordiniert Teams.",
+                "qa.md": "# BMAD Quality Assurance Agent\nPrüft Qualität und führt Tests durch.",
+                "po.md": "# BMAD Product Owner Agent\nDefiniert Produktvision und Anforderungen."
+            }
+            
+            for filename, content in minimal_agents.items():
+                with open(os.path.join(agents_dir, filename), 'w', encoding='utf-8') as f:
+                    f.write(content)
+            
+            # Minimale Struktur für andere Verzeichnisse
+            for dirname in ["checklists", "tasks", "templates", "utils", "workflows"]:
+                dir_path = os.path.join(temp_dir, dirname)
+                os.makedirs(dir_path, exist_ok=True)
+                # Leere README für Struktur
+                with open(os.path.join(dir_path, "README.md"), 'w', encoding='utf-8') as f:
+                    f.write(f"# BMAD {dirname.title()}\nMinimal structure for production deployment.")
+            
+            # Data Verzeichnis mit BMAD Knowledge Base
+            data_dir = os.path.join(temp_dir, "data")
+            os.makedirs(data_dir, exist_ok=True)
+            with open(os.path.join(data_dir, "bmad-kb.md"), 'w', encoding='utf-8') as f:
+                f.write("# BMAD Knowledge Base\nMinimal BMAD methodology knowledge base for production deployment.\n\n## Core Principles\n- Agent-based development methodology\n- Quality-first approach\n- Iterative improvement\n- Automated workflow management")
+            
+            # User Guide erstellen
+            with open(os.path.join(temp_dir, "user-guide.md"), 'w', encoding='utf-8') as f:
+                f.write("# BMAD User Guide\nMinimal production version of BMAD methodology guide.")
+        
+        return temp_dir
     
     def _load_core_structure(self):
         """Lädt die komplette BMAD Core Struktur"""
