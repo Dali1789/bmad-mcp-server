@@ -16,8 +16,8 @@ COPY src/ ./src/
 # Build TypeScript
 RUN npm run build
 
-# Remove dev dependencies after build
-RUN npm ci --only=production --silent
+# Clean install only production dependencies
+RUN rm -rf node_modules && npm ci --only=production --silent
 
 # Production stage
 FROM node:18-alpine AS production
