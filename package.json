@@ -1,0 +1,83 @@
+{
+  "name": "bmad-mcp-server",
+  "version": "2.0.0",
+  "description": "BMAD (Business Method and Development) MCP Server - Intelligent Agent System for Task Management",
+  "main": "src/bmad_mcp/server.py",
+  "type": "module",
+  "scripts": {
+    "install": "echo '⚠️  This is a Python project! Use: pip install -r requirements.txt' && echo 'For MCP setup, see INSTALL.md' && exit 1",
+    "start": "echo '⚠️  This is a Python MCP Server! Use: python -m src.bmad_mcp.server' && exit 1",
+    "test": "echo '⚠️  Python project! Use: python -m pytest tests/' && exit 1",
+    "help": "echo '📖 Installation Guide: See INSTALL.md' && echo '🐍 Python Installation: pip install -r requirements.txt' && echo '🔧 MCP Setup: Configure in claude_desktop_config.json' && echo '🌐 Production: https://bmad-mcp-server-production.up.railway.app'",
+    "postinstall": "npm run help"
+  },
+  "bin": {
+    "bmad-mcp-server": "./scripts/bmad-mcp-server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dali1789/bmad-mcp-server.git"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "bmad",
+    "ai-agents",
+    "task-management",
+    "python",
+    "model-context-protocol",
+    "claude",
+    "anthropic",
+    "openrouter",
+    "notion",
+    "github",
+    "workflow",
+    "automation"
+  ],
+  "author": "BMAD Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Dali1789/bmad-mcp-server/issues"
+  },
+  "homepage": "https://github.com/Dali1789/bmad-mcp-server#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ],
+  "preferGlobal": false,
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {
+    "python": ">=3.8.0"
+  },
+  "files": [
+    "src/",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "pyproject.toml",
+    "INSTALL.md",
+    "README.md",
+    "scripts/",
+    "config/",
+    "templates/"
+  ],
+  "directories": {
+    "lib": "src",
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "config": {
+    "python_command": "python",
+    "mcp_module": "src.bmad_mcp.server"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/bmad-team"
+  }
+}
