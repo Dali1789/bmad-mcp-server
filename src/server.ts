@@ -67,74 +67,9 @@ class BMADMCPServer {
   }
 
   private setupMCPHandlers() {
-    // List available tools
-    this.server.setRequestHandler(
-      { method: "tools/list" } as any,
-      async () => ({
-        tools: [
-          {
-            name: "list_agents",
-            description: "List all available BMAD agents",
-            inputSchema: {
-              type: "object",
-              properties: {},
-              additionalProperties: false
-            }
-          },
-          {
-            name: "bmad_activate_agent",
-            description: "Activate a specific BMAD agent (idempotent)",
-            inputSchema: {
-              type: "object",
-              properties: {
-                agent_id: { type: "string", description: "ID of the agent to activate" },
-                config: { type: "object", description: "Optional agent configuration" }
-              },
-              required: ["agent_id"],
-              additionalProperties: false
-            }
-          },
-          {
-            name: "execute_task",
-            description: "Execute a task with specified agent",
-            inputSchema: {
-              type: "object",
-              properties: {
-                agent_id: { type: "string", description: "Agent to execute task with" },
-                task: { type: "string", description: "Task to execute" },
-                parameters: { type: "object", description: "Task parameters" }
-              },
-              required: ["agent_id", "task"],
-              additionalProperties: false
-            }
-          },
-          {
-            name: "get_agent_status",
-            description: "Get status of specific agent",
-            inputSchema: {
-              type: "object",
-              properties: {
-                agent_id: { type: "string", description: "Agent ID to check" }
-              },
-              required: ["agent_id"],
-              additionalProperties: false
-            }
-          }
-        ]
-      })
-    );
-
-    // Handle tool calls
-    this.server.setRequestHandler(
-      { method: "tools/call" } as any,
-      async (request: any) => {
-        try {
-          return await this.handleToolCall(request.params);
-        } catch (error) {
-          return this.createErrorResponse(error);
-        }
-      }
-    );
+    // For now, focus on HTTP endpoints which work reliably
+    // MCP SDK stdio handlers can be added later
+    console.log('[BMAD] MCP handlers setup - using HTTP endpoints for Railway');
   }
 
   private async handleToolCall(params: any) {
