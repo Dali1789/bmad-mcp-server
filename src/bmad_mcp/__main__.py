@@ -22,15 +22,22 @@ def main():
         os.environ["PORT"] = str(args.port)
     
     # Import and run the main server
-    from .server import main as server_main
-    
     try:
+        from .server import main as server_main
         asyncio.run(server_main())
+    except ImportError as e:
+        print(f"❌ Import error: {e}")
+        print("🔍 Checking PYTHONPATH and dependencies...")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
     except KeyboardInterrupt:
         print("\n🛑 BMAD MCP Server stopped by user")
         sys.exit(0)
     except Exception as e:
         print(f"❌ BMAD MCP Server error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
