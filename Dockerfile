@@ -32,9 +32,5 @@ RUN mkdir -p /app/logs /app/data
 # Expose Railway port
 EXPOSE $PORT
 
-# Health check for Railway
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/health || exit 1
-
-# Railway compatible start command
-CMD ["python", "-m", "bmad_mcp.server", "--port", "$PORT", "--host", "0.0.0.0"]
+# Railway compatible start command - Railway sets PORT env var automatically
+CMD ["python", "-m", "bmad_mcp.server", "--host", "0.0.0.0"]
