@@ -28,7 +28,7 @@ class BMADMCPServer {
 
   private setupMiddleware() {
     this.app.use(express.json());
-    this.app.use((req, res, next) => {
+    this.app.use((_req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -38,7 +38,7 @@ class BMADMCPServer {
 
   private setupRoutes() {
     // Health check for Railway
-    this.app.get('/health', (req, res) => {
+    this.app.get('/health', (_req, res) => {
       res.json({ 
         status: 'healthy', 
         timestamp: new Date().toISOString(),
@@ -47,7 +47,7 @@ class BMADMCPServer {
     });
 
     // Agent states endpoint
-    this.app.get('/agent-states', (req, res) => {
+    this.app.get('/agent-states', (_req, res) => {
       const states = Object.fromEntries(this.agentStates);
       res.json(states);
     });
@@ -66,7 +66,7 @@ class BMADMCPServer {
   private setupMCPHandlers() {
     // List available tools
     this.server.setRequestHandler(
-      { method: "tools/list" },
+      { method: "tools/list" } as any,
       async () => ({
         tools: [
           {
@@ -123,8 +123,8 @@ class BMADMCPServer {
 
     // Handle tool calls
     this.server.setRequestHandler(
-      { method: "tools/call" },
-      async (request) => {
+      { method: "tools/call" } as any,
+      async (request: any) => {
         try {
           return await this.handleToolCall(request.params);
         } catch (error) {
@@ -156,7 +156,7 @@ class BMADMCPServer {
     }
   }
 
-  private async listAgents(args: any) {
+  private async listAgents(_args: any) {
     const agents = [
       { 
         id: "architect", 
