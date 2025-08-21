@@ -20,9 +20,13 @@ class MCPAutoReconnector:
         self.max_retries = 3
         self.retry_delay = 5.0
         
-    async def start_monitoring(self):
+    async def start_monitoring(self, servers=None):
         """Start monitoring MCP connections"""
+        if servers:
+            for server in servers:
+                await self.register_connection(server, None)  # Register for monitoring
         logger.info("MCP Auto-Reconnector started")
+        return {"success": True, "message": "MCP monitoring started"}
         
     async def register_connection(self, name: str, connection: Any):
         """Register a new MCP connection for monitoring"""
