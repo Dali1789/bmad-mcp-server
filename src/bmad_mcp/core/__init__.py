@@ -2,7 +2,7 @@
 BMAD Core - Core functionality and system components
 """
 
-from .bmad_core_loader import BMadLoader
+from .bmad_core_loader import BMadCoreLoader as BMadLoader
 from .project_detector import ProjectDetector
 from .global_registry import BMadGlobalRegistry, global_registry
 from .task_tracker import BMadTaskTracker, BMadTask
