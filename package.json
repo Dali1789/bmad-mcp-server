@@ -12,7 +12,11 @@
     "rebuild": "npm run clean && npm run build",
     "test": "vitest",
     "lint": "eslint src/**/*.ts",
-    "prepare": "echo 'Build already done in Docker'"
+    "prepare": "echo 'Build already done in Docker'",
+    "status": "node dist/server.js --status"
+  },
+  "bin": {
+    "bmad-mcp": "./bin/bmad-mcp.js"
   },
   "keywords": [
     "mcp",
