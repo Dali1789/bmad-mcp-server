@@ -1,6 +1,6 @@
 {
   "name": "bmad-mcp-server",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "BMAD (Business Method and Development) MCP Server - Intelligent Agent System with automatic model selection",
   "main": "dist/server.js",
   "type": "module",

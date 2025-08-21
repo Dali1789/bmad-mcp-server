@@ -42,7 +42,7 @@ class BMADMCPServer {
       res.json({ 
         status: 'healthy',
         service: 'bmad-mcp-server',
-        version: '2.1.0',
+        version: '2.1.1',
         timestamp: process.hrtime()[0] + process.hrtime()[1] / 1e9,
         deployment: 'railway',
         activeAgents: this.agentStates.size
