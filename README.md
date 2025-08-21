@@ -14,7 +14,7 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 - **💻 Developer**: Code implementation, debugging, technical development
 - **📋 Project Manager**: Task coordination, timeline management, resource planning
 - **🔍 QA**: Quality assurance, testing strategies, code review
-- **🔍 Serena Bridge**: Semantic code intelligence via LSP integration ⭐ NEW!
+- **🔍 Coder Agent**: Advanced semantic code analysis and editing capabilities ⭐ NEW!
 
 ### 📋 **Advanced Task Management**
 - **Real-time Progress Tracking**: Live updates and notifications
@@ -41,7 +41,7 @@ A comprehensive **Model Context Protocol (MCP) server** implementing the **BMAD 
 ### 🔄 **Enhanced Features**
 - **BMAD-METHOD Workflow System**: Complete implementation with intelligent orchestration ⭐ NEW!
 - **Quality Gates (@qa commands)**: 6 comprehensive quality assurance commands ⭐ NEW!
-- **Semantic Code Intelligence**: LSP-based code analysis via Serena Bridge ⭐ NEW!
+- **Advanced Semantic Code Analysis**: Professional code intelligence via Coder Agent ⭐ NEW!
 - **Time-based Monitoring**: Scheduled reminders and progress checks
 - **Work Day Simulation**: Demo modes and realistic progression testing
 - **Live Console Output**: Beautiful formatted status displays
@@ -176,19 +176,19 @@ Add to your IDE's MCP configuration:
 | `bmad_workflow_get_status` | Get comprehensive workflow status | Real-time progress monitoring |
 | `bmad_workflow_generate_report` | Generate detailed workflow reports | Analytics & recommendations |
 
-### 🔍 **Serena Bridge Agent** ⭐ NEW!
+### 🔍 **Semantic Code Analysis** ⭐ NEW!
 | Tool | Description | Example |
 |------|-------------|---------|
-| `bmad_serena_initialize` | Initialize Serena MCP server | LSP server startup |
-| `bmad_serena_activate_project` | Activate project for analysis | Semantic code intelligence |
-| `bmad_serena_find_symbol` | Find code symbols semantically | Functions, classes, variables |
-| `bmad_serena_get_symbols_overview` | Get file symbol overview | Code structure analysis |
-| `bmad_serena_find_referencing_symbols` | Find symbol references | Cross-reference tracking |
-| `bmad_serena_insert_after_symbol` | Insert code after symbol | Precise code insertion |
-| `bmad_serena_replace_symbol_body` | Replace symbol implementation | Code modification |
-| `bmad_serena_onboarding` | Automated project analysis | Comprehensive codebase review |
-| `bmad_serena_search_for_pattern` | Advanced pattern search | Intelligent code search |
-| `bmad_serena_write_memory` | Store project knowledge | Persistent insights |
+| `bmad_coder_activate_project` | Activate project for analysis | Semantic code intelligence |
+| `bmad_coder_find_symbol` | Find code symbols semantically | Functions, classes, variables |
+| `bmad_coder_get_symbols_overview` | Get file symbol overview | Code structure analysis |
+| `bmad_coder_find_referencing_symbols` | Find symbol references | Cross-reference tracking |
+| `bmad_coder_insert_after_symbol` | Insert code after symbol | Precise code insertion |
+| `bmad_coder_replace_symbol_body` | Replace symbol implementation | Code modification |
+| `bmad_coder_execute_shell_command` | Execute shell commands | Testing, building, automation |
+| `bmad_coder_search_for_pattern` | Advanced pattern search | Intelligent code search |
+| `bmad_coder_write_memory` | Store project knowledge | Persistent insights |
+| `bmad_coder_read_memory` | Load stored knowledge | Access project memories |
 
 ### 🎨 **Template-System** ⭐ NEW!
 | Tool | Description | Example |
@@ -400,7 +400,7 @@ bmad-mcp-server/
 │       │   ├── developer.py         # Code implementation
 │       │   ├── project_manager.py   # Project coordination
 │       │   ├── qa.py               # Quality assurance
-│       │   └── serena_bridge.py    # Semantic code intelligence
+│       │   └── coder.py           # Advanced semantic code analysis and editing
 │       ├── workflows/              # BMAD-METHOD workflow system
 │       │   ├── workflow_engine.py  # Central workflow orchestration
 │       │   ├── orchestrator_agent.py # Project/Story lifecycle management

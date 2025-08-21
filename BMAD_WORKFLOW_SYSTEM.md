@@ -2,7 +2,7 @@
 
 ## Overview
 
-Das **BMAD-METHOD Workflow System** ist eine vollständige Implementierung der BMAD-Methodik mit intelligenter Agent-Orchestrierung, Quality Gates und automatischer Workflow-Steuerung. Das System kombiniert bewährte Software-Entwicklungspraktiken mit KI-gestützter Automation und Serena LSP-Integration.
+Das **BMAD-METHOD Workflow System** ist eine vollständige Implementierung der BMAD-Methodik mit intelligenter Agent-Orchestrierung, Quality Gates und automatischer Workflow-Steuerung. Das System kombiniert bewährte Software-Entwicklungspraktiken mit KI-gestützter Automation und semantischer Code-Analyse.
 
 ## 🏗️ System-Architektur
 
@@ -21,9 +21,9 @@ Das **BMAD-METHOD Workflow System** ist eine vollständige Implementierung der B
          ┌────────────────────┼────────────────────┐
          │                    │                    │
     ┌─────────┐         ┌─────────┐         ┌─────────┐
-    │ Serena  │         │ BMAD    │         │ Quality │
-    │ Bridge  │         │ Agents  │         │ Gates   │
-    │ Agent   │         │         │         │ System  │
+    │ Coder   │         │ BMAD    │         │ Quality │
+    │ Agent   │         │ Agents  │         │ Gates   │
+    │         │         │         │         │ System  │
     └─────────┘         └─────────┘         └─────────┘
 ```
 
@@ -91,40 +91,36 @@ Draft → Risk Profiling → Validation → Development → QA Check → Ready f
    - Comprehensive reviews
    - Commands: `*risk`, `*design`, `*trace`, `*nfr`, `*review`, `*gate`
 
-### 🔍 Serena Bridge Agent (`serena`)
-**Semantic Code Intelligence via LSP Integration**
+### 🔍 Coder Agent (`coder`)
+**Advanced Semantic Code Analysis and Editing**
 
-Serena erweitert das BMAD-System um professionelle LSP-basierte Code-Analyse:
+Der Coder Agent erweitert das BMAD-System um professionelle Code-Analyse und -Editierung:
 
 #### Core Capabilities:
 - **Symbol Analysis**: Finde & analysiere Code-Symbole semantisch
 - **Reference Tracking**: Verfolge Symbol-Referenzen durch gesamte Codebase
 - **Intelligent Editing**: Präzise Code-Modifikationen mit Kontext
-- **Project Onboarding**: Automatische Codebase-Analyse
+- **Project Analysis**: Automatische Codebase-Analyse und -Struktur
 - **Pattern Search**: Erweiterte Code-Pattern-Suche
 - **Memory Management**: Persistent projekt-spezifisches Wissen
 
 #### Available Tools (via MCP):
 ```
-bmad_serena_initialize              - Serena MCP Server initialisieren
-bmad_serena_activate_project        - Projekt für Analyse aktivieren  
-bmad_serena_find_symbol             - Symbole semantisch finden
-bmad_serena_get_symbols_overview    - Symbol-Übersicht einer Datei
-bmad_serena_find_referencing_symbols- Symbol-Referenzen finden
-bmad_serena_insert_after_symbol     - Code nach Symbol einfügen
-bmad_serena_replace_symbol_body     - Symbol-Inhalt ersetzen
-bmad_serena_onboarding             - Automatisches Projekt-Onboarding
-bmad_serena_get_project_summary     - Projekt-Zusammenfassung
-bmad_serena_execute_shell_command   - Shell-Kommandos ausführen
-bmad_serena_search_for_pattern      - Erweiterte Pattern-Suche
-bmad_serena_write_memory           - Projekt-Wissen speichern
-bmad_serena_read_memory            - Gespeichertes Wissen laden
-bmad_serena_list_memories          - Verfügbare Memories listen
-bmad_serena_get_status             - Serena-Status abfragen
+bmad_coder_activate_project         - Projekt für semantische Analyse aktivieren  
+bmad_coder_find_symbol              - Symbole semantisch finden
+bmad_coder_get_symbols_overview     - Symbol-Übersicht einer Datei
+bmad_coder_find_referencing_symbols - Symbol-Referenzen finden
+bmad_coder_insert_after_symbol      - Code nach Symbol einfügen
+bmad_coder_replace_symbol_body      - Symbol-Inhalt ersetzen
+bmad_coder_execute_shell_command    - Shell-Kommandos ausführen
+bmad_coder_search_for_pattern       - Erweiterte Pattern-Suche
+bmad_coder_write_memory             - Projekt-Wissen speichern
+bmad_coder_read_memory              - Gespeichertes Wissen laden
+bmad_coder_list_memories            - Verfügbare Memories listen
 ```
 
 #### Workflow Integration:
-Serena wird automatisch in kritische Workflow-Phasen eingebunden:
+Der Coder Agent wird automatisch in kritische Workflow-Phasen eingebunden:
 - **Architecture Phase**: Bestehende Code-Struktur analysieren
 - **Development Phase**: Semantic Code Insertion & Modification
 - **QA Phase**: Code-Quality & Pattern-Validation
@@ -314,9 +310,9 @@ report = await workflow_engine.generate_workflow_report(workflow_id)
 - **Custom Agent Plugins**: Extensible agent marketplace
 - **Workflow Templates**: Pre-defined industry-specific workflows
 
-### Serena Enhancements
-- **Multi-Language Support**: Expand beyond current LSP capabilities
-- **Code Generation**: AI-assisted code generation via Serena
+### Coder Agent Enhancements
+- **Multi-Language Support**: Expand semantic analysis capabilities
+- **Code Generation**: AI-assisted code generation via semantic analysis
 - **Refactoring Assistant**: Intelligent code restructuring
 - **Architecture Visualization**: Dynamic system architecture mapping
 
