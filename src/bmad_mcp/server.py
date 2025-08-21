@@ -62,7 +62,7 @@ class BMadMCPServer:
         self.app = FastAPI(title="BMAD MCP Server", description="Railway Deployment Health Check")
         self.setup_fastapi_routes()
         self.agent_manager = AgentManager()
-        self.bmad_loader = BMadLoader(global_registry=self.global_registry)
+        self.bmad_loader = BMadLoader()
         self.project_detector = ProjectDetector(global_registry=self.global_registry)
         self.openrouter_client = OpenRouterClient()
         self.bmad_tools = BMadTools(
