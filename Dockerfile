@@ -7,11 +7,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
+# Copy source code BEFORE installing dependencies
+COPY src/ ./src/
+
 # Install ALL dependencies for build
 RUN npm ci --silent
-
-# Copy source code
-COPY src/ ./src/
 
 # Build TypeScript
 RUN npm run build
