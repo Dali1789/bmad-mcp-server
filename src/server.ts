@@ -40,8 +40,11 @@ class BMADMCPServer {
     // Health check for Railway
     this.app.get('/health', (_req, res) => {
       res.json({ 
-        status: 'healthy', 
-        timestamp: new Date().toISOString(),
+        status: 'healthy',
+        service: 'bmad-mcp-server',
+        version: '2.1.0',
+        timestamp: process.hrtime()[0] + process.hrtime()[1] / 1e9,
+        deployment: 'railway',
         activeAgents: this.agentStates.size
       });
     });
