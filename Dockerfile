@@ -17,7 +17,7 @@ RUN npm ci --silent
 RUN npm run build
 
 # Clean install only production dependencies
-RUN rm -rf node_modules && npm ci --only=production --silent
+RUN rm -rf node_modules && npm ci --omit=dev --silent
 
 # Production stage
 FROM node:18-alpine AS production
