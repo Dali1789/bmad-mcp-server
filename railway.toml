@@ -1,19 +1,14 @@
 [build]
-builder = "DOCKERFILE"
-buildCommand = "docker build -t bmad-mcp-server ."
+  builder = "DOCKERFILE"
+  dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 300
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
+  healthcheckPath = "/health"
+  healthcheckTimeout = 300
+  restartPolicyType = "ON_FAILURE"
+  restartPolicyMaxRetries = 3
 
 [env]
-PYTHONPATH = "/app/src"
-PYTHONUNBUFFERED = "1"
-PORT = "${PORT}"
-
-# Optional environment variables (will be set via Railway dashboard)
-# OPENROUTER_API_KEY = ""
-# ANTHROPIC_API_KEY = ""
-# NOTION_TOKEN = ""
+  NODE_ENV = "production"
+  PORT = "3000"
+  MCP_SERVER_MODE = "http"

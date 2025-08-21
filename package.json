@@ -1,83 +1,56 @@
 {
   "name": "bmad-mcp-server",
-  "version": "2.0.0",
-  "description": "BMAD (Business Method and Development) MCP Server - Intelligent Agent System for Task Management",
-  "main": "src/bmad_mcp/server.py",
+  "version": "2.1.0",
+  "description": "BMAD (Business Method and Development) MCP Server - Intelligent Agent System with automatic model selection",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "install": "echo '⚠️  This is a Python project! Use: pip install -r requirements.txt' && echo 'For MCP setup, see INSTALL.md' && exit 1",
-    "start": "echo '⚠️  This is a Python MCP Server! Use: python -m src.bmad_mcp.server' && exit 1",
-    "test": "echo '⚠️  Python project! Use: python -m pytest tests/' && exit 1",
-    "help": "echo '📖 Installation Guide: See INSTALL.md' && echo '🐍 Python Installation: pip install -r requirements.txt' && echo '🔧 MCP Setup: Configure in claude_desktop_config.json' && echo '🌐 Production: https://bmad-mcp-server-production.up.railway.app'",
-    "postinstall": "npm run help"
-  },
-  "bin": {
-    "bmad-mcp-server": "./scripts/bmad-mcp-server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Dali1789/bmad-mcp-server.git"
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts",
+    "prepare": "npm run build"
   },
   "keywords": [
     "mcp",
-    "mcp-server",
-    "bmad",
-    "ai-agents",
-    "task-management",
-    "python",
     "model-context-protocol",
+    "ai",
+    "agents",
+    "bmad",
     "claude",
-    "anthropic",
-    "openrouter",
-    "notion",
-    "github",
-    "workflow",
-    "automation"
+    "anthropic"
   ],
   "author": "BMAD Team",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Dali1789/bmad-mcp-server/issues"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   },
-  "homepage": "https://github.com/Dali1789/bmad-mcp-server#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  },
   "engines": {
-    "node": ">=16.0.0",
-    "python": ">=3.8.0"
+    "node": ">=18.0.0"
   },
-  "os": [
-    "win32",
-    "darwin",
-    "linux"
-  ],
-  "preferGlobal": false,
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {
-    "python": ">=3.8.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/faber/bmad-mcp-server.git"
   },
-  "files": [
-    "src/",
-    "requirements.txt",
-    "requirements-dev.txt",
-    "pyproject.toml",
-    "INSTALL.md",
-    "README.md",
-    "scripts/",
-    "config/",
-    "templates/"
-  ],
-  "directories": {
-    "lib": "src",
-    "doc": "docs",
-    "example": "examples",
-    "test": "tests"
+  "bugs": {
+    "url": "https://github.com/faber/bmad-mcp-server/issues"
   },
-  "config": {
-    "python_command": "python",
-    "mcp_module": "src.bmad_mcp.server"
-  },
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/bmad-team"
-  }
+  "homepage": "https://github.com/faber/bmad-mcp-server#readme"
 }

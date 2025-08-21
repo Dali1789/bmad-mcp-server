@@ -1,36 +1,52 @@
-# Railway Deployment - BMAD MCP Server v2.0
-FROM python:3.11-slim
+# Multi-stage build for BMAD MCP Server
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# System dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
 
-# Copy requirements first for better caching
-COPY requirements.txt requirements-dev.txt pyproject.toml ./
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN npm ci --only=production --silent
 
 # Copy source code
 COPY src/ ./src/
-COPY templates/ ./templates/
-COPY config/ ./config/
 
-# Install package in editable mode
-RUN pip install -e .
+# Build TypeScript
+RUN npm run build
 
-# Set Python path
-ENV PYTHONPATH=/app/src
+# Production stage
+FROM node:18-alpine AS production
 
-# Create necessary directories
-RUN mkdir -p /app/logs /app/data
+WORKDIR /app
 
-# Expose Railway port
-EXPOSE $PORT
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
 
-# Railway compatible start command - Railway sets PORT env var automatically
-CMD ["python", "-m", "bmad_mcp.server", "--host", "0.0.0.0"]
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S bmad -u 1001
+
+# Copy built application
+COPY --from=builder --chown=bmad:nodejs /app/dist ./dist
+COPY --from=builder --chown=bmad:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=bmad:nodejs /app/package*.json ./
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+
+# Switch to non-root user
+USER bmad
+
+# Expose port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Start with dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/server.js"]
