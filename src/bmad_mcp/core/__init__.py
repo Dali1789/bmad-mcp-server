@@ -11,6 +11,7 @@ from .notion_sync import NotionTaskSync
 from .console_formatter import BMadConsoleFormatter
 from .realtime_updater import BMadRealtimeUpdater
 from .project_templates import BMadProjectTemplates, template_manager
+from .time_monitor import BMadTimeMonitor, BMadWorkDaySimulator
 
 __all__ = [
     'BMadLoader',
@@ -24,5 +25,7 @@ __all__ = [
     'BMadConsoleFormatter',
     'BMadRealtimeUpdater',
     'BMadProjectTemplates',
-    'template_manager'
+    'template_manager',
+    'BMadTimeMonitor',
+    'BMadWorkDaySimulator'
 ]
